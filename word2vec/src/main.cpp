@@ -11,6 +11,7 @@
 #include<string>
 
 #include "args.h"
+#include "fasttext.h"
 
 
 void printUsage() {
@@ -25,6 +26,8 @@ void train(const std::vector<std::string> args) {
 	std::cout << "Train Embedding By Using " + args[1] + " model" << std::endl;
 	Args a = Args();
 	a.parseArgs(args);
+	Fasttext fasttext;
+	fasttext.train(a);
 	std::cout << "Train Embedding By Using " + args[1] + " model have Finished" << std::endl;
 
 }

@@ -143,6 +143,7 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 			} else {
 				std::cerr << "Unknown argument: " << args[ai] << std::endl;
 				printHelp();
+				std::getchar();
 				exit(EXIT_FAILURE);
 			}
 		}
