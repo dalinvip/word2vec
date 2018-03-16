@@ -1,10 +1,10 @@
 /**
- * @Author: bamtercelboo
- * @Date： 2018/03/15
- * @File: main.cpp
- * @Contact： bamtercelboo@{gmail.com, 163.com}
- * @Function：None
- */
+* @Author: bamtercelboo
+* @Date: 2018/03/15
+* @File: main.cpp
+* @Contact: bamtercelboo@{gmail.com, 163.com}
+* @Function: None
+*/
  
 #include<iostream>
 #include<vector>
@@ -26,8 +26,9 @@ void train(const std::vector<std::string> args) {
 	std::cout << "Train Embedding By Using " + args[1] + " model" << std::endl;
 	Args a = Args();
 	a.parseArgs(args);
-	Fasttext fasttext;
+	FastText fasttext;
 	fasttext.train(a);
+	fasttext.saveVectors();
 	std::cout << "Train Embedding By Using " + args[1] + " model have Finished" << std::endl;
 
 }

@@ -1,11 +1,10 @@
 /**
- * Copyright (c) 2016-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- */
+* @Author: bamtercelboo
+* @Date: 2018/03/15
+* @File: dictionary.h
+* @Contact: bamtercelboo@{gmail.com, 163.com}
+* @Function: None
+*/
 
 #pragma once
 
@@ -173,6 +172,13 @@ void Dictionary::initTargets() {
 }
 
 /**
+* @Function: ntokens count.
+*/
+int64_t Dictionary::ntokens() const {
+	return ntokens_;
+}
+
+/**
 * @Function: Ngrams initial.
 */
 void Dictionary::initNgrams() {
@@ -273,4 +279,62 @@ void Dictionary::reset(std::istream& in) const {
 		in.clear();
 		in.seekg(std::streampos(0));
 	}
+}
+
+/**
+* @Function: getCounts.
+*/
+std::vector<int64_t> Dictionary::getCounts() const {
+	std::vector<int64_t> counts;
+	for (int i = 0; i < wordprops_.size(); i++) {
+		counts.push_back(wordprops_[i].count);
+	}
+	return counts;
+}
+
+/**
+* @Function: getLine.
+*/
+int32_t Dictionary::getLine(std::istream& in, std::vector<std::vector<int32_t> >& sourceTypes,
+	std::vector<std::vector<int32_t> >& sources,
+	std::vector<int32_t>& targets, std::minstd_rand& rng) const {
+	std::uniform_real_distribution<> uniform(0, 1);
+	std::string token;
+	vector<string> words;
+	int32_t ntokens = 0;
+
+	reset(in);
+	sourceTypes.clear();
+	sources.clear();
+	targets.clear();
+	words.clear();
+	while (readWord(in, token)) {
+		if (token == EOS)
+			break;
+		words.push_back(token);
+	}
+
+	int word_num = words.size();
+	int valid = 0;
+	
+	for (int i = 0; i < word_num; i++) {
+		int32_t wid = findWord(words[i]);
+		int32_t tid = findTarget(words[i]);
+		ntokens++;
+		if (wid < 0 || tid < 0 || discard(wid, uniform(rng)))
+			continue;
+		valid++;
+		sourceTypes.push_back(std::vector<int32_t>());
+		sources.push_back(std::vector<int32_t>());
+		sourceTypes[valid - 1].push_back(0);
+		sources[valid - 1].push_back(wid);
+		targets.push_back(tid);
+
+		if (args_->model == model_name::skipgram)
+			continue;
+
+		if (ntokens > MAX_LINE_SIZE)
+			break;
+	}
+	return ntokens;
 }
