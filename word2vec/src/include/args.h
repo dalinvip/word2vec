@@ -86,14 +86,14 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 		if (args[ai][0] != '-') {
 			std::cerr << "Provided argument without a dash! Usage:" << std::endl;
 			printHelp();
-			std::getchar();
+			//std::getchar();
 			exit(EXIT_FAILURE);
 		}
 		try {
 			if (args[ai] == "-h") {
 				std::cerr << "Here is the help infprmation! Usage:" << std::endl;
 				printHelp();
-				std::getchar();
+				//std::getchar();
 				exit(EXIT_FAILURE);
 			} else if (args[ai] == "-input") {
 				input = std::string(args.at(ai + 1));
@@ -143,7 +143,7 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 			} else {
 				std::cerr << "Unknown argument: " << args[ai] << std::endl;
 				printHelp();
-				std::getchar();
+				//std::getchar();
 				exit(EXIT_FAILURE);
 			}
 		}

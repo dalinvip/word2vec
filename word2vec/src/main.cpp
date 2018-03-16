@@ -38,7 +38,7 @@ int main(int argc, char** argv){
 	std::vector<std::string> args(argv, argv + argc);
 	if (args.size() < 2) {
 		printUsage();
-		std::getchar();
+		//std::getchar();
 		exit(EXIT_FAILURE);
 	}
 	std::string command(args[1]);
@@ -46,11 +46,11 @@ int main(int argc, char** argv){
 	if (command != "skipgram") {
 		std::cerr << "\nError command: " + command << std::endl;
 		printUsage();
-		std::getchar();
+		//std::getchar();
 		exit(EXIT_FAILURE);
 	}
 	// train start
 	train(args);
-	std::getchar();
+	//std::getchar();
 	return 0;
 }

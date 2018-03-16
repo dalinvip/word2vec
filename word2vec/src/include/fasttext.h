@@ -27,7 +27,7 @@
 #include "utils.h"
 
 class FastText {
-protected:
+  protected:
 	std::shared_ptr<Args> args_;
 	std::shared_ptr<Dictionary> dict_;
 
@@ -43,7 +43,7 @@ protected:
 
 	void startThreads();
 
-public:
+  public:
 	FastText();
 	void saveVectors();
 	void printInfo(real, real, std::ostream&);
@@ -80,6 +80,7 @@ void FastText::train(const Args args) {
 	model_ = std::make_shared<Model>(input_, output_, args_, 0);
 	model_->setTargetCounts(dict_->getCounts());
 }
+
 
 void FastText::printInfo(real progress, real loss, std::ostream& log_stream) {
 	// clock_t might also only be 32bits wide on some systems
