@@ -1,3 +1,4 @@
+#encoding:utf-8
 # @Author : bamtercelboo
 # @Datetime : 2018/3/17 8:50
 # @File : split_zh_char.py
