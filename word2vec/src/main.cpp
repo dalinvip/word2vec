@@ -52,6 +52,6 @@ int main(int argc, char** argv){
 	}
 	// train start
 	train(args);
-	//std::getchar();
+	std::getchar();
 	return 0;
 }

@@ -439,6 +439,12 @@ int32_t Dictionary::getLine(std::istream& in, std::vector<std::vector<int32_t> >
 		if (args_->model == model_name::skipgram)
 			continue;
 
+		int ngrams_count = wordprops_[wid].subwords.size();
+		for (int j = 0; j < ngrams_count; j++) {
+			sourceTypes[valid - 1].push_back(0);
+			sources[valid - 1].push_back(wordprops_[wid].subwords[j]);
+		}
+
 		if (ntokens > MAX_LINE_SIZE)
 			break;
 	}
