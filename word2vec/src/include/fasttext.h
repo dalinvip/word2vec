@@ -49,6 +49,7 @@ class FastText {
 	void printInfo(real, real, std::ostream&);
 
 	void skipgram(Model&, real, const std::vector<std::vector<int32_t> >&, const std::vector<int32_t>&);
+	void subword(Model&, real, const std::vector<std::vector<int32_t> >&, const std::vector<int32_t>&);
 	void trainThread(int32_t);
 	void train(const Args);
 };
@@ -122,6 +123,19 @@ void FastText::skipgram(Model& model, real lr, const std::vector<std::vector<int
 	}
 }
 
+void FastText::subword(Model& model, real lr, const std::vector<std::vector<int32_t> >& source, const std::vector<int32_t>& target) {
+	std::uniform_int_distribution<> uniform(1, args_->ws);
+	for (int32_t w = 0; w < target.size(); w++) {
+		int32_t boundary = uniform(model.rng);
+		const std::vector<int32_t>& ngrams = source[w];
+		for (int32_t c = -boundary; c <= boundary; c++) {
+			if (c != 0 && w + c >= 0 && w + c < target.size()) {
+				model.update(ngrams, target[w + c], lr);
+			}
+		}
+	}
+}
+
 void FastText::trainThread(int32_t threadId) {
 	std::ifstream ifs(args_->input);
 	utils::seek(ifs, threadId * utils::size(ifs) / args_->thread);
@@ -143,6 +157,9 @@ void FastText::trainThread(int32_t threadId) {
 			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
 			//std::cout << localTokenCount << std::endl;
 			skipgram(model, lr, source, target);
+		} else if (args_->model == model_name::subword) {
+			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
+			subword(model, lr, source, target);
 		}
 		if (localTokenCount > args_->lrUpdateRate) {
 			tokenCount_ += localTokenCount;
@@ -189,6 +206,7 @@ void FastText::startThreads() {
 void FastText::saveVectors() {
 	int32_t nwords = dict_->nwords();
 	int32_t ntargets = dict_->ntargets();
+	int32_t nfeatures = dict_->nfeatures();
 
 	Vector vec(args_->dim);
 
@@ -203,6 +221,23 @@ void FastText::saveVectors() {
 			vec.addRow(*input_, i);
 			ofs << word << " " << vec << std::endl;
 		}
+		ofs.close();
+	}
+
+	if (nfeatures > 0) {
+		std::ofstream ofs(args_->output + ".feature");
+		if (!ofs.is_open()) {
+			throw std::invalid_argument(
+				args_->output + ".feature" + " cannot be opened for saving feature embedding.");
+		}
+
+		for (int32_t i = 0; i < nfeatures; i++) {
+			std::string feature = dict_->getFeature(i);
+			vec.zero();
+			vec.addRow(*input_, nwords + i);
+			ofs << feature << " " << vec << std::endl;
+		}
+
 		ofs.close();
 	}
 

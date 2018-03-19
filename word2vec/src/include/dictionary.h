@@ -93,6 +93,7 @@ const std::string Dictionary::EOW = ">";
 */
 Dictionary::Dictionary(std::shared_ptr<Args> args) : args_(args) {
 	words_.setCapacity(MAX_VOCAB_SIZE - 1);
+	features_.setCapacity(MAX_VOCAB_SIZE - 1);
 	targets_.setCapacity(MAX_VOCAB_SIZE - 1);
 }
 
@@ -228,7 +229,7 @@ void Dictionary::initFeature() {
 		if (word != EOS) {
 			vector<string> ngrams;
 			computeSubwords(word, ngrams);
-			for (size_t j = 0; j < ngrams.size; j++) {
+			for (size_t j = 0; j < ngrams.size(); j++) {
 				addFeature(ngrams[j], words_.m_id_to_freq[i]);
 			}
 		}
@@ -285,6 +286,12 @@ void Dictionary::initNgrams() {
 	for (size_t i = 0; i < words_.m_size; i++) {
 		wordprops_[i].word = words_.from_id(i);
 		wordprops_[i].count = words_.m_id_to_freq[i];
+
+		std::string word = BOW + wordprops_[i].word + EOW;
+		wordprops_[i].subwords.clear();
+		if (wordprops_[i].word != EOS) {
+			computeSubwords(word, wordprops_[i].subwords);
+		}
 	}
 }
 

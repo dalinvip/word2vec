@@ -86,6 +86,9 @@ Args::Args() {
 */
 void Args::parseArgs(const std::vector<std::string>& args) {
 	std::string command(args[1]);
+	if (command == "subword") {
+		model = model_name::subword;
+	}
 	for (int ai = 2; ai < args.size(); ai += 2) {
 		if (args[ai][0] != '-') {
 			std::cerr << "Provided argument without a dash! Usage:" << std::endl;
@@ -129,6 +132,10 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 				}
 			} else if (args[ai] == "-bucket") {
 				bucket = std::stoi(args.at(ai + 1));
+			} else if (args[ai] == "-minn") {
+				minn = std::stoi(args.at(ai + 1));
+			} else if (args[ai] == "-maxn") {
+				maxn = std::stoi(args.at(ai + 1));
 			} else if (args[ai] == "-thread") {
 				thread = std::stoi(args.at(ai + 1));
 			} else if (args[ai] == "-t") {
@@ -190,6 +197,8 @@ void Args::printDictionaryHelp() {
 		<< "  -minCount           minimal number of word occurences default:[" << minCount << "]\n"
 		<< "  -minCountLabel      minimal number of label occurences default:[" << minCountLabel << "]\n"
 		<< "  -bucket             number of buckets default:[" << bucket << "]\n"
+		<< "  -minn               min length of char ngram default:[" << minn << "]\n"
+		<< "  -maxn               max length of char ngram default:[" << maxn << "]\n"
 		<< "  -t                  sampling threshold default:[" << t << "]\n"
 		<< "  -label              labels prefix default:[" << label << "]\n";
 }

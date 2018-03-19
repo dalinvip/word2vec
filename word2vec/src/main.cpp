@@ -19,6 +19,7 @@ void printUsage() {
 		<< "usage: word2vec <command> <args>\n\n"
 		<< "The commands supported by word2vec are:\n\n"
 		<< "  skipgram  ------ train word embedding by use skipgram model\n"
+		<< "  subword   ------ train word embedding by use subword  model\n"
 		<< std::endl;
 }
  
@@ -38,15 +39,15 @@ int main(int argc, char** argv){
 	std::vector<std::string> args(argv, argv + argc);
 	if (args.size() < 2) {
 		printUsage();
-		//std::getchar();
+		std::getchar();
 		exit(EXIT_FAILURE);
 	}
 	std::string command(args[1]);
 	std::cout << command << std::endl;
-	if (command != "skipgram" || command != "subword") {
+	if (command != "skipgram" && command != "subword") {
 		std::cerr << "\nError command: " + command << std::endl;
 		printUsage();
-		//std::getchar();
+		std::getchar();
 		exit(EXIT_FAILURE);
 	}
 	// train start
