@@ -24,6 +24,7 @@
 struct entry {
 	std::string word;
 	int64_t count;
+	std::vector<int32_t> subwords;
 };
 
 class Dictionary {
@@ -35,7 +36,10 @@ class Dictionary {
 	void addWord(const std::string&);
 	int32_t findTarget(const std::string&) const;
 	void addTarget(const std::string&, int64_t);
+	int32_t findFeature(const std::string&) const;
+	void addFeature(const std::string&, int64_t);
 
+	void initFeature();
 	void initTargets();
 	void initNgrams();
 
@@ -58,13 +62,18 @@ public:
 
 	int32_t nwords() const;
 	int32_t ntargets() const;
+	int32_t nfeatures() const;
 	int64_t ntokens() const;
 	int32_t getWordId(const std::string&) const;
 	int32_t getTargetId(const std::string&) const;
+	int32_t getFeatureId(const std::string&) const;
 	std::string getWord(int32_t) const;
 	std::string getTarget(int32_t) const;
+	std::string getFeature(int32_t) const;
 
 	std::vector<int64_t> getCounts() const;
+	void computeSubwords(const std::string&, std::vector<std::string>&) const;
+	void computeSubwords(const std::string&, std::vector<int32_t>&) const;
 
 	void initTableDiscard();
 	bool discard(int32_t, real) const;
@@ -162,12 +171,101 @@ int32_t Dictionary::ntargets() const {
 }
 
 /**
+* @Function: find feature Id.
+*/
+int32_t Dictionary::findFeature(const std::string& w) const {
+	return features_.from_string(w);
+}
+
+/**
+* @Function: find feature Id.
+*/
+int32_t Dictionary::getFeatureId(const std::string& w) const {
+	return findFeature(w);
+}
+
+/**
+* @Function: find feature from Id.
+*/
+std::string Dictionary::getFeature(int32_t id) const {
+	assert(id >= 0);
+	assert(id < features_.m_size);
+	return features_.from_id(id);
+}
+
+/**
+* @Function: add feature to alphabet.
+*/
+void Dictionary::addFeature(const std::string& w, int64_t freq) {
+	features_.add_string(w);
+}
+
+/**
+* @Function: feature count in alphabet.
+*/
+int32_t Dictionary::nfeatures() const {
+	return features_.m_size;
+}
+
+/**
 * @Function: target initial.
 */
 void Dictionary::initTargets() {
 	//same as source
 	for (size_t i = 0; i < words_.m_size; i++) {
 		addTarget(words_.from_id(i), words_.m_id_to_freq[i]);
+	}
+}
+
+/**
+* @Function: feature initial.
+*/
+void Dictionary::initFeature() {
+	if (args_->model == model_name::skipgram)
+		return;
+	for (size_t i = 0; i < words_.m_size; i++) {
+		std::string word = BOW + words_.from_id(i) + EOW;
+		if (word != EOS) {
+			vector<string> ngrams;
+			computeSubwords(word, ngrams);
+			for (size_t j = 0; j < ngrams.size; j++) {
+				addFeature(ngrams[j], words_.m_id_to_freq[i]);
+			}
+		}
+	}
+}
+
+void Dictionary::computeSubwords(const std::string& word, std::vector<std::string>& substrings) const {
+	for (size_t i = 0; i < word.size(); i++) {
+		std::string ngram;
+		if ((word[i] & 0xC0) == 0x80) continue;
+		for (size_t j = i, n = 1; j < word.size() && n <= args_->maxn; n++) {
+			ngram.push_back(word[j++]);
+			while (j < word.size() && (word[j] & 0xC0) == 0x80) {
+				ngram.push_back(word[j++]);
+			}
+			if (n >= args_->minn && !(n == 1 && (i == 0 || j == word.size()))) {
+				substrings.push_back(ngram);
+			}
+		}
+	}
+}
+
+
+void Dictionary::computeSubwords(const std::string& word, std::vector<int32_t>& ngrams) const {
+	for (size_t i = 0; i < word.size(); i++) {
+		std::string ngram;
+		if ((word[i] & 0xC0) == 0x80) continue;
+		for (size_t j = i, n = 1; j < word.size() && n <= args_->maxn; n++) {
+			ngram.push_back(word[j++]);
+			while (j < word.size() && (word[j] & 0xC0) == 0x80) {
+				ngram.push_back(word[j++]);
+			}
+			if (n >= args_->minn && !(n == 1 && (i == 0 || j == word.size()))) {
+				int32_t h = findFeature(ngram);
+				if (h >= 0)ngrams.push_back(words_.m_size + h);
+			}
+		}
 	}
 }
 
@@ -256,6 +354,7 @@ void Dictionary::readFromFile(std::istream& in) {
 	}
 	words_.prune(args_->minCount);
 
+	initFeature();
 	initTargets();
 	initNgrams();
 	initTableDiscard();

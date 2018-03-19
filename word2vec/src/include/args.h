@@ -13,7 +13,7 @@
 #include<string>
 
 
-enum class model_name : int {skipgram = 1};
+enum class model_name : int { skipgram = 1, subword};
 enum class loss_name : int {ns = 1};
 
 class Args {
@@ -37,6 +37,8 @@ class Args {
 		loss_name loss;
 		model_name model;
 		int bucket;
+		int minn;
+		int maxn;
 		int thread;
 		double t; //?
 		std::string label;
@@ -68,6 +70,8 @@ Args::Args() {
 	loss = loss_name::ns;
 	model = model_name::skipgram;
 	bucket = 2000000;
+	minn = 3;
+	maxn = 6;
 	thread = 1;
 	lrUpdateRate = 100;
 	t = 1e-4;
@@ -238,6 +242,8 @@ std::string Args::modelToString(model_name mn) const {
 	{
 	case model_name::skipgram:
 		return "skipgram";
+	case model_name::subword:
+		return "subword";
 	default:
 		return "Unknow model name!";
 	}

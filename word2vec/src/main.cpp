@@ -43,7 +43,7 @@ int main(int argc, char** argv){
 	}
 	std::string command(args[1]);
 	std::cout << command << std::endl;
-	if (command != "skipgram") {
+	if (command != "skipgram" || command != "subword") {
 		std::cerr << "\nError command: " + command << std::endl;
 		printUsage();
 		//std::getchar();
