@@ -2,11 +2,19 @@
 
 import re
 import csv
-import urllib as urllib2
+import urllib.request as urllib2
 from bs4 import BeautifulSoup
+# solve encoding
+from imp import reload
+import sys
+defaultencoding = 'utf-8'
+if sys.getdefaultencoding() != defaultencoding:
+    reload(sys)
+    sys.setdefaultencoding(defaultencoding)
+
 
 class Radical(object):
-    dictionary_filepath = 'xinhua.csv'
+    dictionary_filepath = './Radical/xinhua.csv'
     baiduhanyu_url = 'http://hanyu.baidu.com/zici/s?ptype=zici&wd=%s'
 
     def __init__(self):
@@ -20,7 +28,7 @@ class Radical(object):
         reader = csv.reader(file)
 
         for line in reader:
-            print(line)
+            # print(line)
             self.dictionary[line[0]] = line[1]
 
         file.close()
@@ -30,7 +38,7 @@ class Radical(object):
 
         writer = csv.writer(file_obj)
         for word in self.dictionary:
-            writer.writerow([word,self.dictionary[word]])
+            writer.writerow([word, self.dictionary[word]])
 
         file_obj.close()
 
@@ -42,7 +50,7 @@ class Radical(object):
             return self.get_radical_from_baiduhanyu(word)
 
     def post_baidu(self,url):
-        # print url
+        # print(url)
         try:
             timeout = 5
             request = urllib2.Request(url)
@@ -77,8 +85,9 @@ class Radical(object):
 
     def get_radical_from_baiduhanyu(self,word):
         url = self.baiduhanyu_url % word
+        # print(url)
         html = self.post_baidu(url)
-
+        # print(html)
         if html == None:
             return None
         radical = self.anlysis_radical_from_html(html)
@@ -94,10 +103,11 @@ class Radical(object):
 
 if __name__ == '__main__':
     r = Radical()
-    print(r.get_radical("好"))
-    print(r.get_radical('棶'))
-    print(r.get_radical('中'))
-    r.save()
+    print("word {}, radical {}".format("淥", r.get_radical("淥")))
+    print("word {}, radical {}".format("中", r.get_radical("中")))
+    print("word {}, radical {}".format("棶", r.get_radical("棶")))
+
+    # r.save()
 
 
 
