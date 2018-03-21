@@ -75,6 +75,7 @@ def get_char_radical(char_dict=None, char_count=None):
             radical_nocover[char] = NO_RADICAL_FLAG
             continue
         ra = r.get_radical(char)
+        # print(ra)
         if ra is None:
             radical_nocover[char] = NO_RADICAL_FLAG
             continue

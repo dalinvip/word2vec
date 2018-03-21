@@ -3,6 +3,7 @@
 import re
 import csv
 import urllib.request as urllib2
+import urllib
 from bs4 import BeautifulSoup
 # solve encoding
 from imp import reload
@@ -15,6 +16,7 @@ if sys.getdefaultencoding() != defaultencoding:
 
 class Radical(object):
     dictionary_filepath = './Radical/xinhua.csv'
+    # dictionary_filepath = './xinhua.csv'
     baiduhanyu_url = 'http://hanyu.baidu.com/zici/s?ptype=zici&wd=%s'
 
     def __init__(self):
@@ -43,23 +45,21 @@ class Radical(object):
         file_obj.close()
 
     def get_radical(self, word):
-
         if word in self.dictionary:
             return self.dictionary[word]
         else:
+            # word = word.encode("utf-8")
+            word = urllib.parse.quote(word)
             return self.get_radical_from_baiduhanyu(word)
 
     def post_baidu(self,url):
-        # print(url)
         try:
             timeout = 5
             request = urllib2.Request(url)
-            #伪装HTTP请求
             request.add_header('User-agent', 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36')
             request.add_header('connection','keep-alive')
             request.add_header('referer', url)
-            # request.add_header('Accept-Encoding', 'gzip')  # gzip可提高传输速率，但占用计算资源
-            response = urllib2.urlopen(request, timeout = timeout)
+            response = urllib2.urlopen(request, timeout=timeout)
             html = response.read()
             response.close()
             return html
@@ -67,7 +67,7 @@ class Radical(object):
             print('URL Request Error:', e)
             return None
 
-    def anlysis_radical_from_html(self,html_doc):
+    def anlysis_radical_from_html(self, html_doc):
         soup = BeautifulSoup(html_doc, 'html.parser')
         li = soup.find(id="radical")
         radical = li.span.contents[0]
@@ -84,8 +84,10 @@ class Radical(object):
         self.read_in_dictionary()
 
     def get_radical_from_baiduhanyu(self,word):
+        # url = self.baiduhanyu_url % word.decode("utf-8")
         url = self.baiduhanyu_url % word
-        # print(url)
+        # url = self.baiduhanyu_url
+        print(url, end=" ")
         html = self.post_baidu(url)
         # print(html)
         if html == None:
@@ -93,7 +95,7 @@ class Radical(object):
         radical = self.anlysis_radical_from_html(html)
         if radical != None:
             self.dictionary[word] = radical
-
+        print(radical)
         return radical
 
     def save(self):
@@ -103,6 +105,7 @@ class Radical(object):
 
 if __name__ == '__main__':
     r = Radical()
+    # print("word {}, radical {}".format("淥", r.get_radical("w")))
     print("word {}, radical {}".format("淥", r.get_radical("淥")))
     print("word {}, radical {}".format("中", r.get_radical("中")))
     print("word {}, radical {}".format("棶", r.get_radical("棶")))
