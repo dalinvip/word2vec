@@ -22,7 +22,7 @@ sys.path.append(".")
 from Radical.radical import Radical
 
 NO_RADICAL_FLAG = "NRA"
-SPLIT_RADICAL = "#@"
+SPLIT_RADICAL = "_"
 
 def read(input_file=None):
     print("read file from {}".format(input_file))
@@ -139,19 +139,19 @@ def save_corpus_char_radical(corpus_line=None, out_file=None):
 
 if __name__ == "__main__":
     print("extract chinese char radical")
-    # input_file = "./Data/giga_small.txt"
-    # output_file = "./Data/giga_small_out.txt"
-    # save_radical_file = "./Data/radical"
+    input_file = "./Data/giga_small.txt"
+    output_file = "./Data/giga_small_out.txt"
+    save_radical_file = "./Data/radical"
 
-    parser = OptionParser()
-    parser.add_option("--input", dest="input", help="input file")
-    parser.add_option("--output", dest="output", help="output file")
-    parser.add_option("--save_radical", dest="save_radical", help="save radical file")
-    (options, args) = parser.parse_args()
+    # parser = OptionParser()
+    # parser.add_option("--input", dest="input", help="input file")
+    # parser.add_option("--output", dest="output", help="output file")
+    # parser.add_option("--save_radical", dest="save_radical", help="save radical file")
+    # (options, args) = parser.parse_args()
 
-    input_file = options.input
-    output_file = options.output
-    save_radical_file = options.save_radical
+    # input_file = options.input
+    # output_file = options.output
+    # save_radical_file = options.save_radical
 
     try:
         line_list, count_line = read(input_file=input_file)
