@@ -324,6 +324,7 @@ bool Dictionary::readWord(std::istream& in, std::string& word) const {
 	std::streambuf& sb = *in.rdbuf();
 	word.clear();
 	while ((c = sb.sbumpc()) != EOF) {
+		//std::cout << c << std::endl;
 		if (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v' ||
 			c == '\f' || c == '\0') {
 			if (word.empty()) {
@@ -353,6 +354,8 @@ void Dictionary::readFromFile(std::istream& in) {
 	std::string word;
 	ntokens_ = 0;
 	while (readWord(in, word)) {
+		std::cout << word << std::endl;
+		std::getchar();
 		addWord(word);
 		ntokens_++;
 		if (words_.m_size % 1000000 == 0 && args_->verbose > 1) {

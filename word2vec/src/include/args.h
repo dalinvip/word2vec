@@ -13,7 +13,7 @@
 #include<string>
 
 
-enum class model_name : int { skipgram = 1, subword};
+enum class model_name : int { skipgram = 1, subword, subchar_chinese};
 enum class loss_name : int {ns = 1};
 
 class Args {
@@ -88,6 +88,8 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 	std::string command(args[1]);
 	if (command == "subword") {
 		model = model_name::subword;
+	} else if (command == "subchar_chinese") {
+		model = model_name::subchar_chinese;
 	}
 	for (int ai = 2; ai < args.size(); ai += 2) {
 		if (args[ai][0] != '-') {
@@ -97,7 +99,7 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 			exit(EXIT_FAILURE);
 		}
 		try {
-			if (args[ai] == "-h") {
+			if (args[ai] == "-h" || args[ai] == "--help") {
 				std::cerr << "Here is the help infprmation! Usage:" << std::endl;
 				printHelp();
 				//std::getchar();
@@ -253,6 +255,8 @@ std::string Args::modelToString(model_name mn) const {
 		return "skipgram";
 	case model_name::subword:
 		return "subword";
+	case model_name::subchar_chinese:
+		return "subchar_chinese";
 	default:
 		return "Unknow model name!";
 	}

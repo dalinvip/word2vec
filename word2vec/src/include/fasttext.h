@@ -50,6 +50,7 @@ class FastText {
 
 	void skipgram(Model&, real, const std::vector<std::vector<int32_t> >&, const std::vector<int32_t>&);
 	void subword(Model&, real, const std::vector<std::vector<int32_t> >&, const std::vector<int32_t>&);
+	void subchar_chinese(Model&, real, const std::vector<std::vector<int32_t> >&, const std::vector<int32_t>&);
 	void trainThread(int32_t);
 	void train(const Args);
 };
@@ -63,6 +64,7 @@ void FastText::train(const Args args) {
 		//manage expectations
 		throw std::invalid_argument("Cannot use  stdin for training");
 	}
+	//std::ifstream ifs(args_->input);
 	std::ifstream ifs(args_->input);
 	if (!ifs.is_open()) {
 		throw std::invalid_argument(args_->input + "cannot be opened for training!");
@@ -136,6 +138,19 @@ void FastText::subword(Model& model, real lr, const std::vector<std::vector<int3
 	}
 }
 
+void FastText::subchar_chinese(Model& model, real lr, const std::vector<std::vector<int32_t> >& source, const std::vector<int32_t>& target) {
+	std::uniform_int_distribution<> uniform(1, args_->ws);
+	for (int32_t w = 0; w < target.size(); w++) {
+		int32_t boundary = uniform(model.rng);
+		const std::vector<int32_t>& ngrams = source[w];
+		for (int32_t c = -boundary; c <= boundary; c++) {
+			if (c != 0 && w + c >= 0 && w + c < target.size()) {
+				model.update(ngrams, target[w + c], lr);
+			}
+		}
+	}
+}
+
 void FastText::trainThread(int32_t threadId) {
 	std::ifstream ifs(args_->input);
 	utils::seek(ifs, threadId * utils::size(ifs) / args_->thread);
@@ -160,6 +175,9 @@ void FastText::trainThread(int32_t threadId) {
 		} else if (args_->model == model_name::subword) {
 			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
 			subword(model, lr, source, target);
+		} else if (args_->model == model_name::subchar_chinese) {
+			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
+			subchar_chinese(model, lr, source, target);
 		}
 		if (localTokenCount > args_->lrUpdateRate) {
 			tokenCount_ += localTokenCount;
