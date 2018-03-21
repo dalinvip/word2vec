@@ -49,6 +49,7 @@ class Radical(object):
             return self.dictionary[word]
         else:
             # word = word.encode("utf-8")
+            print("From hanyu.baidu:    word {}".format(word), end=" ")
             word = urllib.parse.quote(word)
             return self.get_radical_from_baiduhanyu(word)
 
@@ -83,11 +84,11 @@ class Radical(object):
         # refresh dictionary
         self.read_in_dictionary()
 
-    def get_radical_from_baiduhanyu(self,word):
+    def get_radical_from_baiduhanyu(self, word):
         # url = self.baiduhanyu_url % word.decode("utf-8")
         url = self.baiduhanyu_url % word
         # url = self.baiduhanyu_url
-        print(url, end=" ")
+        # print(url, end=" ")
         html = self.post_baidu(url)
         # print(html)
         if html == None:
@@ -95,7 +96,7 @@ class Radical(object):
         radical = self.anlysis_radical_from_html(html)
         if radical != None:
             self.dictionary[word] = radical
-        print(radical)
+        print("radical {}".format(radical))
         return radical
 
     def save(self):
