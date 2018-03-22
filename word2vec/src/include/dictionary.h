@@ -34,6 +34,8 @@ class Dictionary {
 
 	int32_t findWord(const std::string&) const;
 	void addWord(const std::string&);
+	int32_t findWord_Radical(const std::string&) const;
+	void addWord_Radical(const std::string&);
 	int32_t findTarget(const std::string&) const;
 	void addTarget(const std::string&, int64_t);
 	int32_t findFeature(const std::string&) const;
@@ -47,6 +49,7 @@ class Dictionary {
 
 	std::shared_ptr<Args> args_;
 	alphabet words_;
+	alphabet word_radical_;
 	std::vector<entry> wordprops_;
 	alphabet features_;
 	alphabet targets_;
@@ -61,19 +64,26 @@ public:
 	explicit Dictionary(std::shared_ptr<Args>);
 
 	int32_t nwords() const;
+	int32_t nword_radicals() const;
 	int32_t ntargets() const;
 	int32_t nfeatures() const;
 	int64_t ntokens() const;
 	int32_t getWordId(const std::string&) const;
+	int32_t getWord_RadicalId(const std::string&) const;
 	int32_t getTargetId(const std::string&) const;
 	int32_t getFeatureId(const std::string&) const;
 	std::string getWord(int32_t) const;
+	std::string getWord_Radical(int32_t) const;
 	std::string getTarget(int32_t) const;
 	std::string getFeature(int32_t) const;
 
 	std::vector<int64_t> getCounts() const;
 	void computeSubwords(const std::string&, std::vector<std::string>&) const;
 	void computeSubwords(const std::string&, std::vector<int32_t>&) const;
+
+	// subchar_chinese
+	void computeSubradical(const std::string&, std::vector<std::string>&) const;
+	void computeSubradical(const std::string&, std::vector<int32_t>&) const;
 
 	void initTableDiscard();
 	bool discard(int32_t, real) const;
@@ -93,6 +103,7 @@ const std::string Dictionary::EOW = ">";
 */
 Dictionary::Dictionary(std::shared_ptr<Args> args) : args_(args) {
 	words_.setCapacity(MAX_VOCAB_SIZE - 1);
+	word_radical_.setCapacity(MAX_VOCAB_SIZE - 1);
 	features_.setCapacity(MAX_VOCAB_SIZE - 1);
 	targets_.setCapacity(MAX_VOCAB_SIZE - 1);
 }
@@ -103,6 +114,7 @@ Dictionary::Dictionary(std::shared_ptr<Args> args) : args_(args) {
 int32_t Dictionary::findWord(const std::string& w) const {
 	return words_.from_string(w);
 }
+
 
 /**
 * @Function: find word Id.
@@ -132,6 +144,43 @@ void Dictionary::addWord(const std::string& w) {
 */
 int32_t Dictionary::nwords() const {
 	return words_.m_size;
+}
+
+/**
+* @Function: find word_radical Id.
+*/
+int32_t Dictionary::findWord_Radical(const std::string& w) const {
+	return word_radical_.from_string(w);
+}
+
+/**
+* @Function: find word_radical Id.
+*/
+int32_t Dictionary::getWord_RadicalId(const std::string& w) const {
+	return findWord_Radical(w);
+}
+
+/**
+* @Function: find word_radical from Id.
+*/
+std::string Dictionary::getWord_Radical(int32_t id) const {
+	assert(id >= 0);
+	assert(id <= word_radical_.m_size);
+	return word_radical_.from_id(id);
+}
+
+/**
+* @Function: add word_radical to alphabet.
+*/
+void Dictionary::addWord_Radical(const std::string& w) {
+	word_radical_.add_string(w);
+}
+
+/**
+* @Function: word_radical count in alphabet is the word count.
+*/
+int32_t Dictionary::nword_radicals() const {
+	return word_radical_.m_size;
 }
 
 /**
@@ -222,20 +271,79 @@ void Dictionary::initTargets() {
 * @Function: feature initial.
 */
 void Dictionary::initFeature() {
+	// skipgram not feature
 	if (args_->model == model_name::skipgram)
 		return;
-	for (size_t i = 0; i < words_.m_size; i++) {
-		std::string word = BOW + words_.from_id(i) + EOW;
-		if (word != EOS) {
-			vector<string> ngrams;
-			computeSubwords(word, ngrams);
-			for (size_t j = 0; j < ngrams.size(); j++) {
-				addFeature(ngrams[j], words_.m_id_to_freq[i]);
+
+	//subchar_chinese
+	if (args_->model == model_name::subchar_chinese) {
+		//std::cout << "init subchar_chinese" << std::endl;
+		//std::getchar();
+		for (size_t i = 0; i < word_radical_.m_size; i++) {
+			std::string word_radical = word_radical_.from_id(i);
+			int pos_ = word_radical.find_last_of(args_->radical);
+			if (pos_ == -1) {
+				std::cerr << word_radical << " NO The Separator Of [ " + args_->radical + " ] in the word_radical" << std::endl;
+				std::getchar();
+				exit(EXIT_FAILURE);
+			}
+			std::string radical = BOW + word_radical.substr(pos_ + 1) + EOW;
+			if (word_radical.substr(0, pos_) != EOS) {
+				vector<string> ngrams;
+				computeSubradical(radical, ngrams);
+				for (size_t j = 0; j < ngrams.size(); j++) {
+					addFeature(ngrams[j], word_radical_.m_id_to_freq[i]);
+				}
+			}
+		}
+	}
+
+	//subword for english
+	if (args_->model == model_name::subword) {
+		for (size_t i = 0; i < words_.m_size; i++) {
+			std::string word = BOW + words_.from_id(i) + EOW;
+			if (word != EOS) {
+				vector<string> ngrams;
+				computeSubwords(word, ngrams);
+				for (size_t j = 0; j < ngrams.size(); j++) {
+					addFeature(ngrams[j], words_.m_id_to_freq[i]);
+				}
 			}
 		}
 	}
 }
 
+
+/**
+* @Function: computer subradical for chinese char radical.
+*/
+void Dictionary::computeSubradical(const std::string& radical, std::vector<std::string>& substrings) const {
+	substrings.push_back(radical);
+}
+
+/**
+* @Function: computer subradical for chinese char radical.
+*/
+void Dictionary::computeSubradical(const std::string& word, std::vector<int32_t>& ngrams) const {
+	for (size_t i = 0; i < word.size(); i++) {
+		std::string ngram;
+		if ((word[i] & 0xC0) == 0x80) continue;
+		for (size_t j = i, n = 1; j < word.size() && n <= args_->maxn; n++) {
+			ngram.push_back(word[j++]);
+			while (j < word.size() && (word[j] & 0xC0) == 0x80) {
+				ngram.push_back(word[j++]);
+			}
+			if (n >= args_->minn && !(n == 1 && (i == 0 || j == word.size()))) {
+				int32_t h = findFeature(ngram);
+				if (h >= 0)ngrams.push_back(words_.m_size + h);
+			}
+		}
+	}
+}
+
+/**
+* @Function: computer subword for english.
+*/
 void Dictionary::computeSubwords(const std::string& word, std::vector<std::string>& substrings) const {
 	for (size_t i = 0; i < word.size(); i++) {
 		std::string ngram;
@@ -252,7 +360,9 @@ void Dictionary::computeSubwords(const std::string& word, std::vector<std::strin
 	}
 }
 
-
+/**
+* @Function: computer subword for english.
+*/
 void Dictionary::computeSubwords(const std::string& word, std::vector<int32_t>& ngrams) const {
 	for (size_t i = 0; i < word.size(); i++) {
 		std::string ngram;
@@ -354,9 +464,24 @@ void Dictionary::readFromFile(std::istream& in) {
 	std::string word;
 	ntokens_ = 0;
 	while (readWord(in, word)) {
-		std::cout << word << std::endl;
-		std::getchar();
-		addWord(word);
+		//std::cout << word << std::endl;
+		//std::getchar();
+		if ((args_->model == model_name::skipgram) || (args_->model == model_name::subword)) {
+			addWord(word);
+		} else if (args_->model == model_name::subchar_chinese) {
+			if (word == EOS) {
+				word += "_NRA";
+			}
+			addWord_Radical(word);
+			std::string word_radical = word;
+			int pos_ = word_radical.find_last_of(args_->radical);
+			if (pos_ == -1) {
+				std::cerr << word_radical << " NO The Separator Of [ " + args_->radical + " ] in the word_radical" << std::endl;
+				std::getchar();
+				exit(EXIT_FAILURE);
+			}
+			addWord(word_radical.substr(0, pos_));
+		}
 		ntokens_++;
 		if (words_.m_size % 1000000 == 0 && args_->verbose > 1) {
 			std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::flush;

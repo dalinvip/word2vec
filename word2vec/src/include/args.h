@@ -1,9 +1,9 @@
-/**
+ï»¿/**
 * @Author: bamtercelboo
-* @Date£º 2018/03/15
+* @Dateï¼š 2018/03/15
 * @File: main.cpp
-* @Contact£º bamtercelboo@{gmail.com, 163.com}
-* @Function£ºNone
+* @Contactï¼š bamtercelboo@{gmail.com, 163.com}
+* @Functionï¼šNone
 */
 
 #pragma once
@@ -44,6 +44,7 @@ class Args {
 		std::string label;
 		int verbose;
 		std::string pretrainedVectors;
+		std::string radical;
 		bool saveOutput;
 
 		size_t cutoff;
@@ -78,6 +79,7 @@ Args::Args() {
 	label = "__label__";
 	verbose = 2;
 	pretrainedVectors = "";
+	radical = "_";
 	saveOutput = false;
 }
 
@@ -148,6 +150,8 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 				verbose = std::stoi(args.at(ai + 1));
 			} else if (args[ai] == "-pretrainedVectors") {
 				pretrainedVectors = std::string(args.at(ai + 1));
+			} else if (args[ai] == "-radical") {
+				radical = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-saveOutput") {
 				saveOutput = true;
 				ai--;
