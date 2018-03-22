@@ -93,6 +93,7 @@ public:
 	void readFromFile(std::istream&);
 	//int32_t getLine(std::istream&, std::vector<int32_t>&, std::minstd_rand&) const;
 	int32_t getLine(std::istream&, std::vector<std::vector<int32_t> >&, std::vector<std::vector<int32_t> >&, std::vector<int32_t>&, std::minstd_rand&) const;
+	int32_t getLine_zh(std::istream&, std::vector<std::vector<int32_t> >&, std::vector<std::vector<int32_t> >&, std::vector<int32_t>&, std::minstd_rand&) const;
 };
 
 const std::string Dictionary::EOS = "</s>";
@@ -572,6 +573,71 @@ int32_t Dictionary::getLine(std::istream& in, std::vector<std::vector<int32_t> >
 	for (int i = 0; i < word_num; i++) {
 		int32_t wid = findWord(words[i]);
 		int32_t tid = findTarget(words[i]);
+		std::cout << tid << std::endl;
+		ntokens++;
+		if (wid < 0 || tid < 0 || discard(wid, uniform(rng)))
+			continue;
+		valid++;
+		sourceTypes.push_back(std::vector<int32_t>());
+		sources.push_back(std::vector<int32_t>());
+		sourceTypes[valid - 1].push_back(0);
+		sources[valid - 1].push_back(wid);
+		targets.push_back(tid);
+
+		if (args_->model == model_name::skipgram)
+			continue;
+
+		int ngrams_count = wordprops_[wid].subwords.size();
+		for (int j = 0; j < ngrams_count; j++) {
+			sourceTypes[valid - 1].push_back(0);
+			sources[valid - 1].push_back(wordprops_[wid].subwords[j]);
+		}
+
+		if (ntokens > MAX_LINE_SIZE)
+			break;
+	}
+	return ntokens;
+}
+
+/**
+* @Function: getLine for chinese radical.
+*/
+int32_t Dictionary::getLine_zh(std::istream& in, std::vector<std::vector<int32_t> >& sourceTypes,
+	std::vector<std::vector<int32_t> >& sources,
+	std::vector<int32_t>& targets, std::minstd_rand& rng) const {
+	std::uniform_real_distribution<> uniform(0, 1);
+	std::string token;
+	vector<string> words;
+	int32_t ntokens = 0;
+
+	reset(in);
+	sourceTypes.clear();
+	sources.clear();
+	targets.clear();
+	words.clear();
+	while (readWord(in, token)) {
+		//std::cout << token << std::endl;
+		if (token == EOS)
+			break;
+		words.push_back(token);
+	}
+
+	int word_num = words.size();
+	int valid = 0;
+
+	for (int i = 0; i < word_num; i++) {
+		std::string word_radical = words[i];
+		int pos_ = word_radical.find_last_of(args_->radical);
+		if (pos_ == -1) {
+			std::cerr << word_radical << " NO The Separator Of [ " + args_->radical + " ] in the word_radical" << std::endl;
+			std::getchar();
+			exit(EXIT_FAILURE);
+		}
+		std::string word = word_radical.substr(0, pos_);
+		std::string radical = word_radical.substr(pos_ + 1);
+		int32_t wid = findWord(word);
+		int32_t tid = findTarget(word);
+		//std::cout << tid << std::endl;
 		ntokens++;
 		if (wid < 0 || tid < 0 || discard(wid, uniform(rng)))
 			continue;
