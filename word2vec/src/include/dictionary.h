@@ -25,6 +25,7 @@ struct entry {
 	std::string word;
 	int64_t count;
 	std::vector<int32_t> subwords;
+	std::vector<int32_t> subword_radicals;
 };
 
 class Dictionary {
@@ -313,7 +314,6 @@ void Dictionary::initFeature() {
 	}
 }
 
-
 /**
 * @Function: computer subradical for chinese char radical.
 */
@@ -325,20 +325,9 @@ void Dictionary::computeSubradical(const std::string& radical, std::vector<std::
 * @Function: computer subradical for chinese char radical.
 */
 void Dictionary::computeSubradical(const std::string& word, std::vector<int32_t>& ngrams) const {
-	for (size_t i = 0; i < word.size(); i++) {
-		std::string ngram;
-		if ((word[i] & 0xC0) == 0x80) continue;
-		for (size_t j = i, n = 1; j < word.size() && n <= args_->maxn; n++) {
-			ngram.push_back(word[j++]);
-			while (j < word.size() && (word[j] & 0xC0) == 0x80) {
-				ngram.push_back(word[j++]);
-			}
-			if (n >= args_->minn && !(n == 1 && (i == 0 || j == word.size()))) {
-				int32_t h = findFeature(ngram);
-				if (h >= 0)ngrams.push_back(words_.m_size + h);
-			}
-		}
-	}
+	int32_t h = findFeature(word);
+	if (h >= 0)
+		ngrams.push_back(words_.m_size + h);
 }
 
 /**
@@ -393,14 +382,37 @@ int64_t Dictionary::ntokens() const {
 void Dictionary::initNgrams() {
 	wordprops_.resize(words_.m_size);
 
-	for (size_t i = 0; i < words_.m_size; i++) {
-		wordprops_[i].word = words_.from_id(i);
-		wordprops_[i].count = words_.m_id_to_freq[i];
+	if (args_->model == model_name::skipgram || args_->model == model_name::subword){
+		for (size_t i = 0; i < words_.m_size; i++) {
+			wordprops_[i].word = words_.from_id(i);
+			wordprops_[i].count = words_.m_id_to_freq[i];
 
-		std::string word = BOW + wordprops_[i].word + EOW;
-		wordprops_[i].subwords.clear();
-		if (wordprops_[i].word != EOS) {
-			computeSubwords(word, wordprops_[i].subwords);
+			std::string word = BOW + wordprops_[i].word + EOW;
+			wordprops_[i].subwords.clear();
+			if (wordprops_[i].word != EOS) {
+				computeSubwords(word, wordprops_[i].subwords);
+			}
+		}
+	} else if (args_->model == model_name::subchar_chinese) {
+		for (size_t i = 0; i < word_radical_.m_size; i++) {
+			std::string word_radical = word_radical_.from_id(i);
+			int pos_ = word_radical.find_last_of(args_->radical);
+			if (pos_ == -1) {
+				std::cerr << word_radical << " NO The Separator Of [ " + args_->radical + " ] in the word_radical" << std::endl;
+				std::getchar();
+				exit(EXIT_FAILURE);
+			}
+			std::string word = word_radical.substr(0, pos_);
+			std::string radical = word_radical.substr(pos_ + 1);
+			int wordId = getWordId(word);
+			wordprops_[i].word = words_.from_id(wordId);
+			wordprops_[i].count = words_.m_id_to_freq[wordId];
+			std::string ra = BOW + radical + EOW;
+			wordprops_[i].subwords.clear();
+			if (wordprops_[i].word != EOS) {
+				computeSubradical(ra, wordprops_[i].subwords);
+			}
+
 		}
 	}
 }
@@ -468,6 +480,7 @@ void Dictionary::readFromFile(std::istream& in) {
 		//std::getchar();
 		if ((args_->model == model_name::skipgram) || (args_->model == model_name::subword)) {
 			addWord(word);
+			ntokens_++;
 		} else if (args_->model == model_name::subchar_chinese) {
 			if (word == EOS) {
 				word += "_NRA";
@@ -480,14 +493,19 @@ void Dictionary::readFromFile(std::istream& in) {
 				std::getchar();
 				exit(EXIT_FAILURE);
 			}
+			//std::cout << word_radical + " " + word_radical.substr(0, pos_) << std::endl;
 			addWord(word_radical.substr(0, pos_));
+			//addWord(word);
+			//std::getchar();
+			ntokens_++;
 		}
-		ntokens_++;
+		//ntokens_++;
 		if (words_.m_size % 1000000 == 0 && args_->verbose > 1) {
 			std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::flush;
 		}
 	}
 	words_.prune(args_->minCount);
+	word_radical_.prune(args_->minCount);
 
 	initFeature();
 	initTargets();
