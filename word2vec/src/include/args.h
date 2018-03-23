@@ -79,7 +79,8 @@ Args::Args() {
 	label = "__label__";
 	verbose = 2;
 	pretrainedVectors = "";
-	radical = "#@";
+	//radical = "#@";
+	radical = "_";
 	saveOutput = false;
 }
 

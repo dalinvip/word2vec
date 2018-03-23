@@ -289,8 +289,8 @@ void Dictionary::initFeature() {
 				std::getchar();
 				exit(EXIT_FAILURE);
 			}
-			int r = (args_->radical).size();
-			std::string radical = BOW + word_radical.substr(pos_ + r - 1) + EOW;
+			//int r = (args_->radical).size();
+			std::string radical = BOW + word_radical.substr(pos_ + 1) + EOW;
 			if (word_radical.substr(0, pos_) != EOS) {
 				vector<string> ngrams;
 				computeSubradical(radical, ngrams);
@@ -404,9 +404,9 @@ void Dictionary::initNgrams() {
 				std::getchar();
 				exit(EXIT_FAILURE);
 			}
-			int r = (args_->radical).size();
-			std::string word = word_radical.substr(0, pos_ - r + 1);
-			std::string radical = word_radical.substr(pos_ + +r - 1);
+			//int r = (args_->radical).size();
+			std::string word = word_radical.substr(0, pos_);
+			std::string radical = word_radical.substr(pos_ + 1);
 			int wordId = getWordId(word);
 			wordprops_[i].word = words_.from_id(wordId);
 			wordprops_[i].count = words_.m_id_to_freq[wordId];
@@ -492,13 +492,13 @@ void Dictionary::readFromFile(std::istream& in) {
 			std::string word_radical = word;
 			int pos_ = word_radical.find_last_of(args_->radical);
 			if (pos_ == -1) {
-				std::cerr << word_radical << " NO The Separator Of [ " + args_->radical + " ] in the word_radical" << std::endl;
+				std::cerr << " NO The Separator Of [ " + args_->radical + " ] in the [ " << word_radical << " ]" << std::endl;
 				std::getchar();
 				exit(EXIT_FAILURE);
 			}
-			int r = (args_->radical).size();
+			//int r = (args_->radical).size();
 			//std::cout << "wwwwwwwwwwww   " << word_radical + " " + word_radical.substr(0, pos_ - r + 1) << std::endl;
-			addWord(word_radical.substr(0, pos_ - r + 1));
+			addWord(word_radical.substr(0, pos_));
 			//addWord(word);
 			//std::getchar();
 			ntokens_++;
@@ -639,14 +639,14 @@ int32_t Dictionary::getLine_zh(std::istream& in, std::vector<std::vector<int32_t
 		int pos_ = word_radical.find_last_of(args_->radical);
 		//#std::cout << pos_ << std::endl;
 		if (pos_ == -1) {
-			std::cerr << word_radical << " NO The Separator Of [ " + args_->radical + " ] in the word_radical" << std::endl;
+			std::cerr << " NO The Separator Of [ " + args_->radical + " ] in the [ " << word_radical << " ]" << std::endl;
 			std::getchar();
 			exit(EXIT_FAILURE);
 		}
-		int r = (args_->radical).size();
-		std::cout << "rrrr	" << r << std::endl;
-		std::string word = word_radical.substr(0, pos_ -r + 1);
-		std::string radical = word_radical.substr(pos_ + r - 1);
+		//int r = (args_->radical).size();
+		//std::cout << "rrrr	" << r << std::endl;
+		std::string word = word_radical.substr(0, pos_);
+		std::string radical = word_radical.substr(pos_ + 1);
 		std::cout << "############" << "	" <<  word << "	" << radical << std::endl;
 		int32_t wid = findWord(word);
 		int32_t tid = findTarget(word);

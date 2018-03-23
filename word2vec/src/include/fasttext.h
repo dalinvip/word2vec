@@ -178,7 +178,7 @@ void FastText::trainThread(int32_t threadId) {
 		} else if (args_->model == model_name::subchar_chinese) {
 			localTokenCount += dict_->getLine_zh(ifs, sourceType, source, target, model.rng);
 			//localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
-			std::cout << "localTokenCount\t" << localTokenCount << std::endl;
+			//std::cout << "localTokenCount\t" << localTokenCount << std::endl;
 			subchar_chinese(model, lr, source, target);
 		}
 		if (localTokenCount > args_->lrUpdateRate) {
