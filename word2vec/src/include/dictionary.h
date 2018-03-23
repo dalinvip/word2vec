@@ -576,7 +576,7 @@ int32_t Dictionary::getLine(std::istream& in, std::vector<std::vector<int32_t> >
 	for (int i = 0; i < word_num; i++) {
 		int32_t wid = findWord(words[i]);
 		int32_t tid = findTarget(words[i]);
-		std::cout << tid << std::endl;
+		//std::cout << tid << std::endl;
 		ntokens++;
 		if (wid < 0 || tid < 0 || discard(wid, uniform(rng)))
 			continue;
@@ -629,25 +629,29 @@ int32_t Dictionary::getLine_zh(std::istream& in, std::vector<std::vector<int32_t
 	int valid = 0;
 
 	for (int i = 0; i < word_num; i++) {
-		std::cout << words[i] << std::endl;
+		//std::cout << words[i] << std::endl;
 		//std::getchar();
 		std::string word_radical = words[i];
 		if (word_radical == EOS) {
-			std::cout << EOS << std::endl;
+			//std::cout << EOS << std::endl;
 			word_radical += args_->radical + "NRA";
 		}
 		int pos_ = word_radical.find_last_of(args_->radical);
 		//#std::cout << pos_ << std::endl;
+		//if (pos_ == -1) {
+		//	std::cerr << " NO The Separator Of [ " + args_->radical + " ] in the [ " << word_radical << " ]" << std::endl;
+		//	std::getchar();
+		//	exit(EXIT_FAILURE);
+		//}
 		if (pos_ == -1) {
-			std::cerr << " NO The Separator Of [ " + args_->radical + " ] in the [ " << word_radical << " ]" << std::endl;
-			std::getchar();
-			exit(EXIT_FAILURE);
+			//std::cout << "wwwwwwwwwwwwwwwwwwwwwwwwwwww" << std::endl;
+			continue;
 		}
 		//int r = (args_->radical).size();
 		//std::cout << "rrrr	" << r << std::endl;
 		std::string word = word_radical.substr(0, pos_);
 		std::string radical = word_radical.substr(pos_ + 1);
-		std::cout << "############" << "	" <<  word << "	" << radical << std::endl;
+		//std::cout << "############" << "	" <<  word << "	" << radical << std::endl;
 		int32_t wid = findWord(word);
 		int32_t tid = findTarget(word);
 		//std::cout << tid << std::endl;
