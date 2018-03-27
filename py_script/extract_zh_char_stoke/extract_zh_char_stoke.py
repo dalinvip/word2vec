@@ -104,16 +104,16 @@ class Extract_stoke(object):
 
 if __name__ == "__main__":
     print("extract chinese character stoke")
-    input_file = "./Data/giga_small.txt"
-    output_file = "./Data/giga_small_out"
+    # input_file = "./Data/giga_small.txt"
+    # output_file = "./Data/giga_small_out"
 
-    # parser = OptionParser()
-    # parser.add_option("--input", dest="input", help="input file")
-    # parser.add_option("--output", dest="output", help="output file")
-    # (options, args) = parser.parse_args()
-    #
-    # input_file = options.input
-    # output_file = options.output
+    parser = OptionParser()
+    parser.add_option("--input", dest="input", help="input file")
+    parser.add_option("--output", dest="output", help="output file")
+    (options, args) = parser.parse_args()
+
+    input_file = options.input
+    output_file = options.output
     try:
         Extract_stoke(input_file=input_file, output_file=output_file)
     except Exception as err:
