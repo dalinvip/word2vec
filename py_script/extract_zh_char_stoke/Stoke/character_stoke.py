@@ -27,7 +27,8 @@ if sys.getdefaultencoding() != defaultencoding:
 
 
 class Stoke(object):
-    dictionary_filepath = "./default_stoke.txt"
+    # dictionary_filepath = "./default_stoke.txt"
+    dictionary_filepath = "./Stoke/default_stoke.txt"
     # baiduhanyu_url = 'http://hanyu.baidu.com/zici/s?ptype=zici&wd=%s'
     hanzi5_url = "http://www.hanzi5.com/bishun/%s.html"
 
@@ -43,7 +44,7 @@ class Stoke(object):
                 line = line.split(" ")
                 self.dictionary[line[0]] = line[1:]
         f.close()
-        print(self.dictionary)
+        # print(self.dictionary)
 
     def get_stoke(self, word):
         if word in self.dictionary:
