@@ -14,7 +14,8 @@
         中: 丨フ一丨
 """
 
-from Stoke.character_stoke import Stoke
+# from Stoke.character_stoke import Stoke
+from Stoke.character_stoke_handian import Stoke
 import sys
 import os
 from optparse import OptionParser
@@ -53,7 +54,7 @@ class Extract_stoke(object):
             for line in f:
                 now_line += 1
                 sys.stdout.write("\r handling with the {} line, all {} lines.".format(now_line, line_count))
-                # if now_line == 3:
+                # if now_line == 2:
                 #     break
                 line = line.strip("\n")
                 for char in line:
