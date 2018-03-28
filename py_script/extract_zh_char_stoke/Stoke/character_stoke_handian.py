@@ -55,7 +55,7 @@ class Stoke(object):
         if word in self.dictionary:
             return self.dictionary[word]
         else:
-            print("From hanzi5:    word {}".format(word), end=" ")
+            print("From handian:    word {}".format(word), end=" ")
             self.handian_url = self.handian.get_url(word=word)
             word_utf = word
             word = hex((ord(word)))[2:]
@@ -102,7 +102,7 @@ class Stoke(object):
 
 
 if __name__ == "__main__":
-    print("extract character stoke from [http://www.hanzi5.com/bishun/]")
+    print("extract character stoke from [http://www.zdic.net/]")
 
     stoke = Stoke()
     print("中", stoke.get_stoke("中"))
