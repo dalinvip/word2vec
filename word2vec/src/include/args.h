@@ -13,7 +13,7 @@
 #include<string>
 
 
-enum class model_name : int { skipgram = 1, subword, subchar_chinese};
+enum class model_name : int { skipgram = 1, subword, subchar_chinese, subradical};
 enum class loss_name : int {ns = 1};
 
 class Args {
@@ -25,6 +25,7 @@ class Args {
 	public:
 		Args();
 		std::string input;
+		std::string inradical;
 		std::string output;
 		double lr;
 		int lrUpdateRate;
@@ -45,6 +46,7 @@ class Args {
 		int verbose;
 		std::string pretrainedVectors;
 		std::string radical;
+		std::string radicalpad;
 		bool saveOutput;
 
 		size_t cutoff;
@@ -81,6 +83,7 @@ Args::Args() {
 	pretrainedVectors = "";
 	//radical = "#@";
 	radical = "_";
+	radicalpad = "NRA";
 	saveOutput = false;
 }
 
@@ -91,14 +94,17 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 	std::string command(args[1]);
 	if (command == "subword") {
 		model = model_name::subword;
-	} else if (command == "subchar_chinese") {
+	}
+	else if (command == "subchar_chinese") {
 		model = model_name::subchar_chinese;
+	} else if (command == "subradical") {
+		model = model_name::subradical;
 	}
 	for (int ai = 2; ai < args.size(); ai += 2) {
 		if (args[ai][0] != '-') {
 			std::cerr << "Provided argument without a dash! Usage:" << std::endl;
 			printHelp();
-			//std::getchar();
+			std::getchar();
 			exit(EXIT_FAILURE);
 		}
 		try {
@@ -109,6 +115,8 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 				exit(EXIT_FAILURE);
 			} else if (args[ai] == "-input") {
 				input = std::string(args.at(ai + 1));
+			} else if (args[ai] == "-inradical") {
+				inradical = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-output") {
 				output = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-lr") {
@@ -153,7 +161,10 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 				pretrainedVectors = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-radical") {
 				radical = std::string(args.at(ai + 1));
-			} else if (args[ai] == "-saveOutput") {
+			} else if (args[ai] == "-radicalpad") {
+				radicalpad = std::string(args.at(ai + 1));
+			}
+			else if (args[ai] == "-saveOutput") {
 				saveOutput = true;
 				ai--;
 			} else if (args[ai] == "-cutoff") {
@@ -188,8 +199,9 @@ void Args::printHelp() {
 void Args::printBasicHelp() {
 	std::cerr
 		<< "\n The Following arguments are mandatory:\n"
-		<< "  -input               training file path\n"
-		<< "  -outpus              output file path\n"
+		<< "  -input						     training file path\n"
+		<< "  -inradical		chinese character radical file path\n"
+		<< "  -output							   output file path\n"
 		<< "\n The Following arguments are optional:\n"
 		<< "  -verbose   verbosity level[" << verbose << "]\n"
 		<< std::endl;
@@ -207,7 +219,9 @@ void Args::printDictionaryHelp() {
 		<< "  -minn               min length of char ngram default:[" << minn << "]\n"
 		<< "  -maxn               max length of char ngram default:[" << maxn << "]\n"
 		<< "  -t                  sampling threshold default:[" << t << "]\n"
-		<< "  -label              labels prefix default:[" << label << "]\n";
+		<< "  -label              labels prefix default:[" << label << "]\n"
+		<< "  -radical              labels prefix default:[" << radical << "]\n"
+		<< "  -radicalpad              labels prefix default:[" << radicalpad << "]\n";
 }
 
 /**
@@ -262,6 +276,8 @@ std::string Args::modelToString(model_name mn) const {
 		return "subword";
 	case model_name::subchar_chinese:
 		return "subchar_chinese";
+	case model_name::subradical:
+		return "subradical";
 	default:
 		return "Unknow model name!";
 	}

@@ -91,6 +91,7 @@ public:
 
 	bool readWord(std::istream&, std::string&) const;
 	void readFromFile(std::istream&);
+	void readFromFile(std::istream&, std::istream&);
 	//int32_t getLine(std::istream&, std::vector<int32_t>&, std::minstd_rand&) const;
 	int32_t getLine(std::istream&, std::vector<std::vector<int32_t> >&, std::vector<std::vector<int32_t> >&, std::vector<int32_t>&, std::minstd_rand&) const;
 	int32_t getLine_zh(std::istream&, std::vector<std::vector<int32_t> >&, std::vector<std::vector<int32_t> >&, std::vector<int32_t>&, std::minstd_rand&) const;
@@ -484,9 +485,10 @@ void Dictionary::readFromFile(std::istream& in) {
 		if ((args_->model == model_name::skipgram) || (args_->model == model_name::subword)) {
 			addWord(word);
 			ntokens_++;
-		} else if (args_->model == model_name::subchar_chinese) {
+		}
+		else if (args_->model == model_name::subchar_chinese) {
 			if (word == EOS) {
-				word +=  (args_->radical + "NRA");
+				word += (args_->radical + "NRA");
 			}
 			addWord_Radical(word);
 			std::string word_radical = word;
@@ -496,11 +498,7 @@ void Dictionary::readFromFile(std::istream& in) {
 				std::getchar();
 				exit(EXIT_FAILURE);
 			}
-			//int r = (args_->radical).size();
-			//std::cout << "wwwwwwwwwwww   " << word_radical + " " + word_radical.substr(0, pos_ - r + 1) << std::endl;
 			addWord(word_radical.substr(0, pos_));
-			//addWord(word);
-			//std::getchar();
 			ntokens_++;
 		}
 		//ntokens_++;
@@ -509,7 +507,45 @@ void Dictionary::readFromFile(std::istream& in) {
 		}
 	}
 	words_.prune(args_->minCount);
-	word_radical_.prune(args_->minCount);
+	if (args_->model == model_name::subchar_chinese) {
+		word_radical_.prune(args_->minCount);
+	}
+
+	initFeature();
+	initTargets();
+	initNgrams();
+	initTableDiscard();
+
+	if (args_->verbose > 0) {
+		std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::endl;
+		std::cerr << "Number of words:  " << words_.m_size << std::endl;
+		std::cerr << "Number of features: " << features_.m_size << std::endl;
+		std::cerr << "Number of targets: " << targets_.m_size << std::endl;
+	}
+	if (words_.m_size == 0) {
+		throw std::invalid_argument("Empty vocabulary. Check the input file Or Try a smaller -minCount value.");
+	}
+}
+
+/**
+* @Function: read file.
+*/
+void Dictionary::readFromFile(std::istream& in, std::istream& infeature) {
+	std::string word;
+	ntokens_ = 0;
+	while (readWord(in, word)) {
+		//std::cout << word << std::endl;
+		//std::getchar();
+		addWord(word);
+		ntokens_++;
+		if (words_.m_size % 1000000 == 0 && args_->verbose > 1) {
+			std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::flush;
+		}
+	}
+	words_.prune(args_->minCount);
+	if (args_->model == model_name::subchar_chinese) {
+		word_radical_.prune(args_->minCount);
+	}
 
 	initFeature();
 	initTargets();

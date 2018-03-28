@@ -62,7 +62,7 @@ void FastText::train(const Args args) {
 	dict_ = std::make_shared<Dictionary>(args_);
 	if (args_->input == "-") {
 		//manage expectations
-		throw std::invalid_argument("Cannot use  stdin for training");
+		throw std::invalid_argument("Cannot use stdin for training");
 	}
 	//std::ifstream ifs(args_->input);
 	std::ifstream ifs(args_->input);
@@ -70,9 +70,23 @@ void FastText::train(const Args args) {
 		throw std::invalid_argument(args_->input + "cannot be opened for training!");
 	}
 
-	// read file to dict
-	dict_->readFromFile(ifs);
-	ifs.close();
+	if ((args_->model == model_name::skipgram) || (args_->model == model_name::subword) || (args_->model == model_name::subchar_chinese)) {
+		// read file to dict
+		dict_->readFromFile(ifs);
+		ifs.close();
+	} else if (args_->model == model_name::subradical) {
+		if (args_->inradical == "") {
+			throw std::invalid_argument("subradical must be have inradical file [-inradical]");
+		}
+		std::ifstream infeature(args_->inradical);
+		if (!infeature.is_open()) {
+			throw std::invalid_argument(args_->inradical + "cannot be opened for training!");
+		}
+		dict_->readFromFile(ifs, infeature);
+		ifs.close();
+		infeature.close();
+	}
+	
 
 	input_ = std::make_shared<Matrix>(dict_->nwords() + dict_->nfeatures(), args_->dim);
 	input_->uniform(1.0 / args_->dim);
