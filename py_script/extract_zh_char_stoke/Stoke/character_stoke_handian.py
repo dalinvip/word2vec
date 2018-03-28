@@ -65,6 +65,9 @@ class Stoke(object):
     def get_stoke_from_handian(self, word):
         url = self.handian_url
         print("url", url)
+        if url == "http://www.zdic.net/sousuo/":
+            return None
+
         html = self.post_baidu(url)
         # print(html)
         if html is None:
@@ -108,6 +111,7 @@ if __name__ == "__main__":
     print("中", stoke.get_stoke("中"))
     print("王", stoke.get_stoke("王"))
     print("吋", stoke.get_stoke("吋"))
+    print("緉", stoke.get_stoke("緉"))
 
 
 

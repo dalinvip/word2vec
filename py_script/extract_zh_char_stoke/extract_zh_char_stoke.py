@@ -23,9 +23,15 @@ from optparse import OptionParser
 
 class Extract_stoke(object):
     def __init__(self, input_file, output_file):
+
         input_file = input_file
         output_file_found = output_file + ".Found"
+        output_file_found_temp = output_file + ".TempFound"
         output_file_NoFound = output_file + ".NoFound"
+        if os.path.exists(output_file_found_temp):
+            os.remove(output_file_found_temp)
+        print(output_file_found_temp)
+        self.file_word = open(output_file_found_temp, encoding="UTF-8", mode="w")
         self.stoke_opera = Stoke()
         self.dict = {}
         self.stoke_dict = {}
@@ -74,6 +80,7 @@ class Extract_stoke(object):
             sys.stdout.write("\r handling with the {} line, all {} lines.".format(now_line, line_count))
             char_stoke = self.stoke_opera.get_stoke(char)
             if char_stoke is not None:
+                self.write_word(self.file_word, word=char, stoke=char_stoke)
                 self.stoke_dict[char] = char_stoke
             else:
                 self.stoke_NoFound_dict[char] = [self.NoFound]
@@ -92,6 +99,10 @@ class Extract_stoke(object):
         file.close()
         print("Save Finished.")
 
+    def write_word(self, file_word, word, stoke):
+        v_str = self.dict_value2str(stoke)
+        file_word.write(word + " " + v_str[1:] + "\n")
+
     def dict_value2str(self, v_list=None):
         if v_list is None:
             return ""
@@ -107,6 +118,7 @@ if __name__ == "__main__":
     print("extract chinese character stoke")
     # input_file = "./Data/giga_small.txt"
     # output_file = "./Data/giga_small_out"
+    # Extract_stoke(input_file=input_file, output_file=output_file)
 
     parser = OptionParser()
     parser.add_option("--input", dest="input", help="input file")

@@ -10,6 +10,7 @@
 """
 
 import requests
+import time
 
 
 class Handian(object):
@@ -28,6 +29,7 @@ class Handian(object):
                       "CNZZDATA524192=cnzz_eid%3D915161487-1522106804-null%26ntime%3D1522193207; cxls=%E6%9E%97; lb%5Fc=mh; "
                       "lb%5Fb=mh; lb%5Fa=hp; tp=tp1; ASPSESSIONIDASQSRBQC=JDMHPALADHOGFHIPCAICKLNM", # 由于字数限制，这里省略掉cookie，见下文的回答
             "Connection": "keep-alive",
+            # "Connection": "close",
         }
 
         self.params = {
@@ -68,8 +70,13 @@ class Handian(object):
             # "q": "我"
             "q": word
         }
+        requests.adapters.DEFAULT_RETRIES = 50
+        s = requests.session()
+        s.keep_alive = False
+        time.sleep(2)
         response = requests.post("http://www.zdic.net/sousuo/", data=self.params,
                                  headers=self.headers, cookies=self.cookies)
+
         return response.url
 
 
@@ -77,5 +84,5 @@ if __name__ == "__main__":
     handian = Handian()
     print(handian.get_url("我"))
     print(handian.get_url("你"))
-    print(handian.get_url("她"))
+    print(handian.get_url("烔"))
 
