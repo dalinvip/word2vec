@@ -116,6 +116,7 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 				input = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-inradical") {
 				inradical = std::string(args.at(ai + 1));
+				std::cout << inradical << std::endl;
 			} else if (args[ai] == "-output") {
 				output = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-lr") {
@@ -180,6 +181,12 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 			printHelp();
 			exit(EXIT_FAILURE);
 		}
+	}
+	if (model == model_name::subradical && inradical == "") {
+		std::cerr << "sunradical need inradical file, [-inradical] is empty." << std::endl;
+		std::getchar();
+		printHelp();
+		exit(EXIT_FAILURE);
 	}
 }
 
