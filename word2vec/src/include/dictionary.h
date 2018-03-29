@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <iterator>
 #include <cmath>
+#include <map>
 
 
 struct entry {
@@ -26,6 +27,14 @@ struct entry {
 	int64_t count;
 	std::vector<int32_t> subwords;
 	std::vector<int32_t> subword_radicals;
+};
+
+//readfeature
+struct  feature
+{
+	std::string word;
+	int32_t count;
+	std::string subfeature;
 };
 
 class Dictionary {
@@ -52,6 +61,9 @@ class Dictionary {
 	alphabet words_;
 	alphabet word_radical_;
 	std::vector<entry> wordprops_;
+	std::vector<feature> featureinitial_;
+	std::map<std::string, std::string> featuremap;
+	std::map<std::string, std::string> ::iterator featpos;
 	alphabet features_;
 	alphabet targets_;
 	std::vector<real> pdiscard_;
@@ -77,6 +89,7 @@ public:
 	std::string getWord_Radical(int32_t) const;
 	std::string getTarget(int32_t) const;
 	std::string getFeature(int32_t) const;
+	std::string getFeat(std::string);
 
 	std::vector<int64_t> getCounts() const;
 	void computeSubwords(const std::string&, std::vector<std::string>&) const;
@@ -86,10 +99,15 @@ public:
 	void computeSubradical(const std::string&, std::vector<std::string>&) const;
 	void computeSubradical(const std::string&, std::vector<int32_t>&) const;
 
+	//subfeature
+	void computerSubfeat(const std::string&, std::vector<std::string>&) const;
+	void computerSubfeat(const std::string&, std::vector<int32_t>&) const;
+
 	void initTableDiscard();
 	bool discard(int32_t, real) const;
 
 	bool readWord(std::istream&, std::string&) const;
+	void readFeature(std::istream&);
 	void readFromFile(std::istream&);
 	void readFromFile(std::istream&, std::istream&);
 	//int32_t getLine(std::istream&, std::vector<int32_t>&, std::minstd_rand&) const;
@@ -315,7 +333,41 @@ void Dictionary::initFeature() {
 			}
 		}
 	}
+
+	//subradical for chinese character radical feature
+	if (args_->model == model_name::subradical) {
+		std::cout << "initial feature......" << std::endl;
+		std::cout << "subradical model" << std::endl;
+		std::getchar();
+		std::string word;
+		std::string feat;
+		for (size_t i = 0; i < words_.m_size; i++) {
+			word = words_.from_id(i);
+			feat = getFeat(word);
+			std::string featBE = (BOW + feat + EOW);
+
+			std::getchar();
+		}
+		std::getchar();
+	}
+
+
 }
+
+std::string Dictionary::getFeat(std::string word) {
+	featpos = featuremap.find(word);
+	std::cout << word << endl;
+	std::string feat;
+	if (featpos != featuremap.end()) {
+		//std::cout << (*featpos).first << "	" << (*featpos).second << std::endl;
+		feat = (*featpos).second;
+	} else {
+		feat = args_->radicalpad;
+	}
+	return feat;
+}
+
+
 
 /**
 * @Function: computer subradical for chinese char radical.
@@ -543,10 +595,11 @@ void Dictionary::readFromFile(std::istream& in, std::istream& infeature) {
 		}
 	}
 	words_.prune(args_->minCount);
-	if (args_->model == model_name::subchar_chinese) {
-		word_radical_.prune(args_->minCount);
-	}
 
+	//read feature file
+	readFeature(infeature);
+
+	// initial feature and ngram
 	initFeature();
 	initTargets();
 	initNgrams();
@@ -561,6 +614,29 @@ void Dictionary::readFromFile(std::istream& in, std::istream& infeature) {
 	if (words_.m_size == 0) {
 		throw std::invalid_argument("Empty vocabulary. Check the input file Or Try a smaller -minCount value.");
 	}
+}
+
+/**
+* @Function: read feature file.
+*/
+void Dictionary::readFeature(std::istream& infeature) {
+	std::cout << " read feature from " << args_->inradical << std::endl;
+	std::string line;
+	std::string word;
+	std::string feat;
+	featuremap.clear();
+	while (std::getline(infeature, line)){
+		//std::cout << line << std::endl;
+		int pos = line.find_first_of(" ");
+		if (pos == -1) {
+			std::cerr << "Warning " << line << std::endl;
+			continue;
+		}
+		word = line.substr(0, pos);
+		feat = line.substr(pos + 1);
+		featuremap[word] = feat;
+	}
+	std::cout << "featuremap size	" << featuremap.size() << std::endl;
 }
 
 /**

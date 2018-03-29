@@ -83,7 +83,7 @@ Args::Args() {
 	pretrainedVectors = "";
 	//radical = "#@";
 	radical = "_";
-	radicalpad = "NRA";
+	radicalpad = "N";
 	saveOutput = false;
 }
 
