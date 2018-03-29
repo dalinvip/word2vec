@@ -90,6 +90,7 @@ public:
 	std::string getTarget(int32_t) const;
 	std::string getFeature(int32_t) const;
 	std::string getFeat(std::string);
+	void trim(std::string&);
 
 	std::vector<int64_t> getCounts() const;
 	void computeSubwords(const std::string&, std::vector<std::string>&) const;
@@ -352,6 +353,38 @@ void Dictionary::initFeature() {
 		}
 		//std::getchar();
 	}
+
+	//subcomponent for chinese character component feature
+	if (args_->model == model_name::subcomponent) {
+		std::cerr << "initial component feature" << std::endl;
+		std::cerr << "subcomponent model" << std::endl;
+		std::string word;
+		std::string feat;
+		for (size_t i = 0; i < words_.m_size; i++) {
+			word = words_.from_id(i);
+			feat = getFeat(word);
+			std::string featBE = (BOW + feat + EOW);
+			vector<string> ngrams;
+			computerSubfeat(featBE, ngrams);
+			for (size_t j = 0; j < ngrams.size(); j++) {
+				addFeature(ngrams[j], words_.m_id_to_freq[i]);
+			}
+		}
+	}
+}
+
+/**
+* @Function: erase the empty space
+*/
+void Dictionary::trim(std::string& s) {
+	int index = 0;
+	if (!s.empty())
+	{
+		while ((index = s.find(" ", index)) != string::npos)
+		{
+			s.erase(index, 1);
+		}
+	}
 }
 
 /**
@@ -367,6 +400,8 @@ std::string Dictionary::getFeat(std::string word) {
 	} else {
 		feat = args_->radicalpad;
 	}
+	// delete space empty
+	trim(feat);
 	return feat;
 }
 
@@ -374,16 +409,44 @@ std::string Dictionary::getFeat(std::string word) {
 * @Function: computer subfeature for chinese character feature, like radaical/stoke.
 */
 void Dictionary::computerSubfeat(const std::string& featbe, std::vector<std::string>& substrings) const {
-	substrings.push_back(featbe);
+	//substrings.push_back(featbe);
+	for (size_t i = 0; i < featbe.size(); i++) {
+		std::string ngram;
+		if ((featbe[i] & 0xC0) == 0x80) continue;
+		for (size_t j = i, n = 1; j < featbe.size() && n <= args_->maxn; n++) {
+			ngram.push_back(featbe[j++]);
+			while (j < featbe.size() && (featbe[j] & 0xC0) == 0x80) {
+				ngram.push_back(featbe[j++]);
+			}
+			if (n >= args_->minn && !(n == 1 && (i == 0 || j == featbe.size()))) {
+				substrings.push_back(ngram);
+			}
+		}
+	}
 }
 
 /**
 * @Function: computer subfeature for chinese character feature, like radaical/stoke.
 */
 void Dictionary::computerSubfeat(const std::string& word, std::vector<int32_t>& ngrams) const {
-	int32_t h = findFeature(word);
-	if (h >= 0)
-		ngrams.push_back(words_.m_size + h);
+	//int32_t h = findFeature(word);
+	//if (h >= 0)
+	//	ngrams.push_back(words_.m_size + h);
+	for (size_t i = 0; i < word.size(); i++) {
+		std::string ngram;
+		if ((word[i] & 0xC0) == 0x80) continue;
+		for (size_t j = i, n = 1; j < word.size() && n <= args_->maxn; n++) {
+			ngram.push_back(word[j++]);
+			while (j < word.size() && (word[j] & 0xC0) == 0x80) {
+				ngram.push_back(word[j++]);
+			}
+			if (n >= args_->minn && !(n == 1 && (i == 0 || j == word.size()))) {
+				int32_t h = findFeature(ngram);
+				if (h >= 0)
+					ngrams.push_back(words_.m_size + h);
+			}
+		}
+	}
 }
 
 /**
@@ -491,6 +554,20 @@ void Dictionary::initNgrams() {
 
 	// subradical ngram
 	if (args_->model == model_name::subradical) {
+		for (size_t i = 0; i < words_.m_size; i++) {
+			wordprops_[i].word = words_.from_id(i);
+			wordprops_[i].count = words_.m_id_to_freq[i];
+			std::string feat = getFeat(wordprops_[i].word);
+			std::string featBE = (BOW + feat + EOW);
+			wordprops_[i].subwords.clear();
+			if (wordprops_[i].word != EOS) {
+				computerSubfeat(featBE, wordprops_[i].subwords);
+			}
+		}
+	}
+
+	// subcomponent ngram
+	if (args_->model == model_name::subcomponent) {
 		for (size_t i = 0; i < words_.m_size; i++) {
 			wordprops_[i].word = words_.from_id(i);
 			wordprops_[i].count = words_.m_id_to_freq[i];
@@ -651,7 +728,6 @@ void Dictionary::readFromFile(std::istream& in, std::istream& infeature) {
 * @Function: read feature file.
 */
 void Dictionary::readFeature(std::istream& infeature) {
-	std::cerr << " read feature from " << args_->inradical << std::endl;
 	std::string line;
 	std::string word;
 	std::string feat;

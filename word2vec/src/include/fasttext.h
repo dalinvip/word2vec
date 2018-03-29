@@ -52,6 +52,7 @@ class FastText {
 	void subword(Model&, real, const std::vector<std::vector<int32_t> >&, const std::vector<int32_t>&);
 	void subchar_chinese(Model&, real, const std::vector<std::vector<int32_t> >&, const std::vector<int32_t>&);
 	void subradical(Model&, real, const std::vector<std::vector<int32_t> >&, const std::vector<int32_t>&);
+	void subcomponent(Model&, real, const std::vector<std::vector<int32_t> >&, const std::vector<int32_t>&);
 	void trainThread(int32_t);
 	void train(const Args);
 };
@@ -82,6 +83,17 @@ void FastText::train(const Args args) {
 		std::ifstream infeature(args_->inradical);
 		if (!infeature.is_open()) {
 			throw std::invalid_argument(args_->inradical + "cannot be opened for training!");
+		}
+		dict_->readFromFile(ifs, infeature);
+		ifs.close();
+		infeature.close();
+	} else if (args_->model == model_name::subcomponent) {
+		if (args_->incomponent == "") {
+			throw std::invalid_argument("subcomponent must be have incomponent file [-incomponent]");
+		}
+		std::ifstream infeature(args_->incomponent);
+		if (!infeature.is_open()) {
+			throw std::invalid_argument(args_->incomponent + "cannot be opened for training!");
 		}
 		dict_->readFromFile(ifs, infeature);
 		ifs.close();
@@ -180,6 +192,19 @@ void FastText::subradical(Model& model, real lr, const std::vector<std::vector<i
 	}
 }
 
+void FastText::subcomponent(Model& model, real lr, const std::vector<std::vector<int32_t> >& source, const std::vector<int32_t>& target) {
+	std::uniform_int_distribution<> uniform(1, args_->ws);
+	for (int32_t w = 0; w < target.size(); w++) {
+		int32_t boundary = uniform(model.rng);
+		const std::vector<int32_t>& ngrams = source[w];
+		for (int32_t c = -boundary; c <= boundary; c++) {
+			if (c != 0 && w + c >= 0 && w + c < target.size()) {
+				model.update(ngrams, target[w + c], lr);
+			}
+		}
+	}
+}
+
 void FastText::trainThread(int32_t threadId) {
 	std::ifstream ifs(args_->input);
 	utils::seek(ifs, threadId * utils::size(ifs) / args_->thread);
@@ -212,6 +237,9 @@ void FastText::trainThread(int32_t threadId) {
 		} else if (args_->model == model_name::subradical){
 			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
 			subradical(model, lr, source, target);
+		} else if (args_->model == model_name::subcomponent) {
+			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
+			subcomponent(model, lr, source, target);
 		}
 		if (localTokenCount > args_->lrUpdateRate) {
 			tokenCount_ += localTokenCount;
