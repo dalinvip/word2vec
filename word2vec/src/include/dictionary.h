@@ -336,8 +336,8 @@ void Dictionary::initFeature() {
 
 	//subradical for chinese character radical feature
 	if (args_->model == model_name::subradical) {
-		std::cout << "initial feature......" << std::endl;
-		std::cout << "subradical model" << std::endl;
+		std::cerr << "initial feature......" << std::endl;
+		std::cerr << "subradical model" << std::endl;
 		std::string word;
 		std::string feat;
 		for (size_t i = 0; i < words_.m_size; i++) {
@@ -352,8 +352,6 @@ void Dictionary::initFeature() {
 		}
 		//std::getchar();
 	}
-
-
 }
 
 /**
@@ -653,7 +651,7 @@ void Dictionary::readFromFile(std::istream& in, std::istream& infeature) {
 * @Function: read feature file.
 */
 void Dictionary::readFeature(std::istream& infeature) {
-	std::cout << " read feature from " << args_->inradical << std::endl;
+	std::cerr << " read feature from " << args_->inradical << std::endl;
 	std::string line;
 	std::string word;
 	std::string feat;
@@ -669,7 +667,7 @@ void Dictionary::readFeature(std::istream& infeature) {
 		feat = line.substr(pos + 1);
 		featuremap[word] = feat;
 	}
-	std::cout << "featuremap size	" << featuremap.size() << std::endl;
+	std::cerr << "featuremap size	" << featuremap.size() << std::endl;
 }
 
 /**
@@ -740,7 +738,6 @@ int32_t Dictionary::getLine(std::istream& in, std::vector<std::vector<int32_t> >
 			sourceTypes[valid - 1].push_back(0);
 			sources[valid - 1].push_back(wordprops_[wid].subwords[j]);
 		}
-
 		if (ntokens > MAX_LINE_SIZE)
 			break;
 	}

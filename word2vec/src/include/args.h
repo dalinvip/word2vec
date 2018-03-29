@@ -83,7 +83,7 @@ Args::Args() {
 	pretrainedVectors = "";
 	//radical = "#@";
 	radical = "_";
-	radicalpad = "N";
+	radicalpad = "NRA";
 	saveOutput = false;
 }
 
@@ -94,8 +94,7 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 	std::string command(args[1]);
 	if (command == "subword") {
 		model = model_name::subword;
-	}
-	else if (command == "subchar_chinese") {
+	} else if (command == "subchar_chinese") {
 		model = model_name::subchar_chinese;
 	} else if (command == "subradical") {
 		model = model_name::subradical;
