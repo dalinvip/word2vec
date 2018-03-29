@@ -13,7 +13,7 @@
 #include<string>
 
 
-enum class model_name : int { skipgram = 1, subword, subchar_chinese, subradical};
+enum class model_name : int { skipgram = 1, subword, subchar_chinese, subradical, subcomponent};
 enum class loss_name : int {ns = 1};
 
 class Args {
@@ -26,6 +26,7 @@ class Args {
 		Args();
 		std::string input;
 		std::string inradical;
+		std::string incomponent;
 		std::string output;
 		double lr;
 		int lrUpdateRate;
@@ -47,6 +48,7 @@ class Args {
 		std::string pretrainedVectors;
 		std::string radical;
 		std::string radicalpad;
+		std::string componentpad;
 		bool saveOutput;
 
 		size_t cutoff;
@@ -84,6 +86,8 @@ Args::Args() {
 	//radical = "#@";
 	radical = "_";
 	radicalpad = "NRA";
+	// componentpad must be one character
+	componentpad = "N";
 	saveOutput = false;
 }
 
@@ -98,6 +102,8 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 		model = model_name::subchar_chinese;
 	} else if (command == "subradical") {
 		model = model_name::subradical;
+	} else if ( command == "subcomponent") {
+		model = model_name::subcomponent;
 	}
 	for (int ai = 2; ai < args.size(); ai += 2) {
 		if (args[ai][0] != '-') {
@@ -116,7 +122,8 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 				input = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-inradical") {
 				inradical = std::string(args.at(ai + 1));
-				std::cout << inradical << std::endl;
+			} else if (args[ai] == "-incomponent") {
+				incomponent = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-output") {
 				output = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-lr") {
@@ -163,8 +170,9 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 				radical = std::string(args.at(ai + 1));
 			} else if (args[ai] == "-radicalpad") {
 				radicalpad = std::string(args.at(ai + 1));
-			}
-			else if (args[ai] == "-saveOutput") {
+			} else if (args[ai] == "-componentpad") {
+				componentpad = std::string(args.at(ai + 1));
+			} else if (args[ai] == "-saveOutput") {
 				saveOutput = true;
 				ai--;
 			} else if (args[ai] == "-cutoff") {
@@ -172,7 +180,6 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 			} else {
 				std::cerr << "Unknown argument: " << args[ai] << std::endl;
 				printHelp();
-				//std::getchar();
 				exit(EXIT_FAILURE);
 			}
 		}
@@ -184,6 +191,12 @@ void Args::parseArgs(const std::vector<std::string>& args) {
 	}
 	if (model == model_name::subradical && inradical == "") {
 		std::cerr << "sunradical need inradical file, [-inradical] is empty." << std::endl;
+		std::getchar();
+		printHelp();
+		exit(EXIT_FAILURE);
+	}
+	if (model == model_name::subcomponent && incomponent == "") {
+		std::cerr << "subcomponent need incomponent file, [-incomponent] is empty." << std::endl;
 		std::getchar();
 		printHelp();
 		exit(EXIT_FAILURE);
@@ -207,6 +220,7 @@ void Args::printBasicHelp() {
 		<< "\n The Following arguments are mandatory:\n"
 		<< "  -input						     training file path\n"
 		<< "  -inradical		chinese character radical file path\n"
+		<< "  -incomponent		chinese character component file path\n"
 		<< "  -output							   output file path\n"
 		<< "\n The Following arguments are optional:\n"
 		<< "  -verbose   verbosity level[" << verbose << "]\n"
@@ -227,7 +241,8 @@ void Args::printDictionaryHelp() {
 		<< "  -t                  sampling threshold default:[" << t << "]\n"
 		<< "  -label              labels prefix default:[" << label << "]\n"
 		<< "  -radical              labels prefix default:[" << radical << "]\n"
-		<< "  -radicalpad              labels prefix default:[" << radicalpad << "]\n";
+		<< "  -radicalpad              labels prefix default:[" << radicalpad << "]\n"
+		<< "  -componentpad              labels prefix default:[" << componentpad << "]\n";
 }
 
 /**
@@ -284,6 +299,8 @@ std::string Args::modelToString(model_name mn) const {
 		return "subchar_chinese";
 	case model_name::subradical:
 		return "subradical";
+	case model_name::subcomponent:
+		return "subcomponent";
 	default:
 		return "Unknow model name!";
 	}

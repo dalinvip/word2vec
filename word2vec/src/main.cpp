@@ -22,6 +22,7 @@ void printUsage() {
 		<< "  subword   ------ train word embedding by use subword  model\n"
 		<< "  subchar_chinese   ------ train chinses character embedding by use subchar_chinese model\n"
 		<< "  subradical   ------ train chinses character embedding by use subradical model\n"
+		<< "  subcomponent   ------ train chinses character embedding by use subcomponent model\n"
 		<< std::endl;
 }
  
@@ -46,7 +47,8 @@ int main(int argc, char** argv){
 	}
 	std::string command(args[1]);
 	std::cout << command << std::endl;
-	if (command != "skipgram" && command != "subword" && command != "subchar_chinese" && command != "subradical") {
+	if (command != "skipgram" && command != "subword" && command != "subchar_chinese" 
+		&& command != "subradical" && command != "subcomponent") {
 		std::cerr << "\nError command: " + command << std::endl;
 		printUsage();
 		std::getchar();
