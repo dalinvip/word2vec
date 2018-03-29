@@ -338,25 +338,30 @@ void Dictionary::initFeature() {
 	if (args_->model == model_name::subradical) {
 		std::cout << "initial feature......" << std::endl;
 		std::cout << "subradical model" << std::endl;
-		std::getchar();
 		std::string word;
 		std::string feat;
 		for (size_t i = 0; i < words_.m_size; i++) {
 			word = words_.from_id(i);
 			feat = getFeat(word);
 			std::string featBE = (BOW + feat + EOW);
-
-			std::getchar();
+			vector<string> ngrams;
+			computerSubfeat(featBE, ngrams);
+			for (size_t j = 0; j < ngrams.size(); j++) {
+				addFeature(ngrams[j], words_.m_id_to_freq[i]);
+			}
 		}
-		std::getchar();
+		//std::getchar();
 	}
 
 
 }
 
+/**
+* @Function: get feature from feature map in dictionary.
+*/
 std::string Dictionary::getFeat(std::string word) {
 	featpos = featuremap.find(word);
-	std::cout << word << endl;
+	//std::cout << word << endl;
 	std::string feat;
 	if (featpos != featuremap.end()) {
 		//std::cout << (*featpos).first << "	" << (*featpos).second << std::endl;
@@ -367,7 +372,21 @@ std::string Dictionary::getFeat(std::string word) {
 	return feat;
 }
 
+/**
+* @Function: computer subfeature for chinese character feature, like radaical/stoke.
+*/
+void Dictionary::computerSubfeat(const std::string& featbe, std::vector<std::string>& substrings) const {
+	substrings.push_back(featbe);
+}
 
+/**
+* @Function: computer subfeature for chinese character feature, like radaical/stoke.
+*/
+void Dictionary::computerSubfeat(const std::string& word, std::vector<int32_t>& ngrams) const {
+	int32_t h = findFeature(word);
+	if (h >= 0)
+		ngrams.push_back(words_.m_size + h);
+}
 
 /**
 * @Function: computer subradical for chinese char radical.
@@ -469,6 +488,20 @@ void Dictionary::initNgrams() {
 				computeSubradical(ra, wordprops_[i].subwords);
 			}
 
+		}
+	}
+
+	// subradical ngram
+	if (args_->model == model_name::subradical) {
+		for (size_t i = 0; i < words_.m_size; i++) {
+			wordprops_[i].word = words_.from_id(i);
+			wordprops_[i].count = words_.m_id_to_freq[i];
+			std::string feat = getFeat(wordprops_[i].word);
+			std::string featBE = (BOW + feat + EOW);
+			wordprops_[i].subwords.clear();
+			if (wordprops_[i].word != EOS) {
+				computerSubfeat(featBE, wordprops_[i].subwords);
+			}
 		}
 	}
 }
