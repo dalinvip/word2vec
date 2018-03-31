@@ -224,15 +224,12 @@ void FastText::trainThread(int32_t threadId) {
 			lr = 0.0001 * args_->lr;
 		if (args_->model == model_name::skipgram) {
 			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
-			//std::cout << localTokenCount << std::endl;
 			skipgram(model, lr, source, target);
 		} else if (args_->model == model_name::subword) {
 			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
 			subword(model, lr, source, target);
 		} else if (args_->model == model_name::subchar_chinese) {
 			localTokenCount += dict_->getLine_zh(ifs, sourceType, source, target, model.rng);
-			//localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
-			//std::cout << "localTokenCount\t" << localTokenCount << std::endl;
 			subchar_chinese(model, lr, source, target);
 		} else if (args_->model == model_name::subradical){
 			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);

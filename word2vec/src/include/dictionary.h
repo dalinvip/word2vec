@@ -299,8 +299,6 @@ void Dictionary::initFeature() {
 
 	//subchar_chinese
 	if (args_->model == model_name::subchar_chinese) {
-		//std::cout << "init subchar_chinese" << std::endl;
-		//std::getchar();
 		for (size_t i = 0; i < word_radical_.m_size; i++) {
 			std::string word_radical = word_radical_.from_id(i);
 			int pos_ = word_radical.find_last_of(args_->radical);
@@ -409,7 +407,6 @@ std::string Dictionary::getFeat(std::string word) {
 * @Function: computer subfeature for chinese character feature, like radaical/stoke.
 */
 void Dictionary::computerSubfeat(const std::string& featbe, std::vector<std::string>& substrings) const {
-	//substrings.push_back(featbe);
 	for (size_t i = 0; i < featbe.size(); i++) {
 		std::string ngram;
 		if ((featbe[i] & 0xC0) == 0x80) continue;
@@ -429,9 +426,6 @@ void Dictionary::computerSubfeat(const std::string& featbe, std::vector<std::str
 * @Function: computer subfeature for chinese character feature, like radaical/stoke.
 */
 void Dictionary::computerSubfeat(const std::string& word, std::vector<int32_t>& ngrams) const {
-	//int32_t h = findFeature(word);
-	//if (h >= 0)
-	//	ngrams.push_back(words_.m_size + h);
 	for (size_t i = 0; i < word.size(); i++) {
 		std::string ngram;
 		if ((word[i] & 0xC0) == 0x80) continue;
@@ -694,8 +688,6 @@ void Dictionary::readFromFile(std::istream& in, std::istream& infeature) {
 	std::string word;
 	ntokens_ = 0;
 	while (readWord(in, word)) {
-		//std::cout << word << std::endl;
-		//std::getchar();
 		addWord(word);
 		ntokens_++;
 		if (words_.m_size % 1000000 == 0 && args_->verbose > 1) {
@@ -795,7 +787,6 @@ int32_t Dictionary::getLine(std::istream& in, std::vector<std::vector<int32_t> >
 	for (int i = 0; i < word_num; i++) {
 		int32_t wid = findWord(words[i]);
 		int32_t tid = findTarget(words[i]);
-		//std::cout << tid << std::endl;
 		ntokens++;
 		if (wid < 0 || tid < 0 || discard(wid, uniform(rng)))
 			continue;
@@ -837,7 +828,6 @@ int32_t Dictionary::getLine_zh(std::istream& in, std::vector<std::vector<int32_t
 	targets.clear();
 	words.clear();
 	while (readWord(in, token)) {
-		//std::cout << token << std::endl;
 		if (token == EOS)
 			break;
 		words.push_back(token);
@@ -847,32 +837,18 @@ int32_t Dictionary::getLine_zh(std::istream& in, std::vector<std::vector<int32_t
 	int valid = 0;
 
 	for (int i = 0; i < word_num; i++) {
-		//std::cout << words[i] << std::endl;
-		//std::getchar();
 		std::string word_radical = words[i];
 		if (word_radical == EOS) {
-			//std::cout << EOS << std::endl;
 			word_radical += args_->radical + "NRA";
 		}
 		int pos_ = word_radical.find_last_of(args_->radical);
-		//#std::cout << pos_ << std::endl;
-		//if (pos_ == -1) {
-		//	std::cerr << " NO The Separator Of [ " + args_->radical + " ] in the [ " << word_radical << " ]" << std::endl;
-		//	std::getchar();
-		//	exit(EXIT_FAILURE);
-		//}
 		if (pos_ == -1) {
-			//std::cout << "wwwwwwwwwwwwwwwwwwwwwwwwwwww" << std::endl;
 			continue;
 		}
-		//int r = (args_->radical).size();
-		//std::cout << "rrrr	" << r << std::endl;
 		std::string word = word_radical.substr(0, pos_);
 		std::string radical = word_radical.substr(pos_ + 1);
-		//std::cout << "############" << "	" <<  word << "	" << radical << std::endl;
 		int32_t wid = findWord(word);
 		int32_t tid = findTarget(word);
-		//std::cout << tid << std::endl;
 		ntokens++;
 		if (wid < 0 || tid < 0 || discard(wid, uniform(rng)))
 			continue;
