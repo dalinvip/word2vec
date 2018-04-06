@@ -389,6 +389,12 @@ void Dictionary::trim(std::string& s) {
 * @Function: get feature from feature map in dictionary.
 */
 std::string Dictionary::getFeat(std::string word) {
+	/*std::string pad;
+	if (args_->model == model_name::subradical) {
+		pad = args_->radicalpad;
+	} else if (args_->model == model_name::subcomponent) {
+		pad = args_->componentpad;
+	}*/
 	featpos = featuremap.find(word);
 	//std::cout << word << endl;
 	std::string feat;
@@ -396,7 +402,7 @@ std::string Dictionary::getFeat(std::string word) {
 		//std::cout << (*featpos).first << "	" << (*featpos).second << std::endl;
 		feat = (*featpos).second;
 	} else {
-		feat = args_->radicalpad;
+		feat = args_->featurepad;
 	}
 	// delete space empty
 	trim(feat);

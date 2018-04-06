@@ -49,6 +49,7 @@ class Args {
 		std::string radical;
 		std::string radicalpad;
 		std::string componentpad;
+		std::string featurepad;
 		bool saveOutput;
 
 		size_t cutoff;
@@ -88,6 +89,7 @@ Args::Args() {
 	radicalpad = "NRA";
 	// componentpad must be one character
 	componentpad = "N";
+	featurepad = "N";
 	saveOutput = false;
 }
 
