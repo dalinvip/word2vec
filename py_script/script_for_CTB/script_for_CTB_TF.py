@@ -1,13 +1,15 @@
 # @Author : bamtercelboo
-# @Datetime : 2018/4/6 8:44
-# @File : embed_for_zh_NER.py
-# @Last Modify Time : 2018/4/6 8:44
+# @Datetime : 2018/4/11 19:15
+# @File : script_for_CTB_TF.py
+# @Last Modify Time : 2018/4/11 19:15
 # @Contact : bamtercelboo@{gmail.com, 163.com}
 
 """
-    FILE :  embed_for_zh_NER.py
+    FILE :  script_for_CTB_TF.py
     FUNCTION : None
 """
+
+
 
 import os
 import sys
@@ -41,8 +43,11 @@ class SourceFeat(object):
             for line in f:
                 if line == "\n":
                     continue
-                line = line.strip("\n").split(" ")
-                self.corpus_dict[line[0]] = 1
+                # print(line)
+                line = line.strip("\n")
+                # print(line)
+                for word in line:
+                    self.corpus_dict[word] = 1
         print("all {} chinese words".format(len(self.corpus_dict)))
 
     def read_feat(self, infile=None):
@@ -134,13 +139,13 @@ class SourceFeat(object):
 
 if __name__ == "__main__":
     print("handle source and feature embedding")
-    input_file = "./Data/MSRA_All.txt"
-    # feat_file = "./Data/merge_char_radical.txt"
-    feat_file = "./Data/merge_char_component.txt"
+    input_file = "./Data/CTB6_seg_all.txt"
+    feat_file = "./Data/merge_char_radical.txt"
+    # feat_file = "./Data/merge_char_component.txt"
     # feat_file = "./Data/merge_char_component_radical.txt"
     # feat_file = "./Data/char_component.txt"
     # feat_file = "./Data/char_component_radical.txt"
-    out_file = "./Data/zhwiki_subcomponent.100d.msra.target_feat.txt"
+    out_file = "./Data/zhwiki_subcomponent.100d.maxn.ctb6.target_feat.txt"
     source_embed = "./Data/zhwiki_subcomponent.maxn.100d.target"
     feat_embed = "./Data/zhwiki_subcomponent.maxn.100d.feature"
 

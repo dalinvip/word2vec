@@ -87,9 +87,11 @@ class SourceFeat(object):
                 feat = self.feat_dict[word]
                 sum_feat_embed, count = self.find_feat_embed(feat)
                 if count != 0:
-                    num += 1
-                    feat_embed = np.divide(sum_feat_embed, count)
+                    feat_embed = sum_feat_embed
+                    num += count
             if word_embed is not 0 or feat_embed is not 0:
+                if num is 0:
+                    continue
                 avg_embed = np.round(np.add(word_embed, feat_embed) / num, 6)
                 avg_embed = [str(i) for i in avg_embed.tolist()]
                 self.avgembed_dict[word] = avg_embed
@@ -136,13 +138,13 @@ if __name__ == "__main__":
     print("handle source and feature embedding")
     input_file = "./Data/MSRA_All.txt"
     # feat_file = "./Data/merge_char_radical.txt"
-    feat_file = "./Data/merge_char_component.txt"
-    # feat_file = "./Data/merge_char_component_radical.txt"
+    # feat_file = "./Data/merge_char_component.txt"
+    feat_file = "./Data/merge_char_component_radical.txt"
     # feat_file = "./Data/char_component.txt"
     # feat_file = "./Data/char_component_radical.txt"
-    out_file = "./Data/zhwiki_subcomponent.100d.msra.target_feat.txt"
-    source_embed = "./Data/zhwiki_subcomponent.maxn.100d.target"
-    feat_embed = "./Data/zhwiki_subcomponent.maxn.100d.feature"
+    out_file = "./Data/zhwiki_subcomponentf.100d.msra.target_feat_new.txt"
+    source_embed = "./Data/zhwiki_subcomponentf.100d.target"
+    feat_embed = "./Data/zhwiki_subcomponentf.100d.feature"
 
     SourceFeat(input_file, feat_file, source_embed, feat_embed, out_file)
     print("All handled.")
