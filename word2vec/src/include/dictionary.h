@@ -39,7 +39,8 @@ struct  feature
 
 class Dictionary {
   protected:
-	static const int32_t MAX_VOCAB_SIZE = 100000000;
+	  //static const int32_t MAX_VOCAB_SIZE = 100000000;
+	  static const int32_t MAX_VOCAB_SIZE = 30000000;
 	static const int32_t MAX_LINE_SIZE = 1024;
 
 	int32_t findWord(const std::string&) const;
@@ -406,6 +407,7 @@ std::string Dictionary::getFeat(std::string word) {
 	}
 	// delete space empty
 	trim(feat);
+	//std::cout << word + "	" + feat << std::endl;
 	return feat;
 }
 
@@ -662,11 +664,16 @@ void Dictionary::readFromFile(std::istream& in) {
 			ntokens_++;
 		}
 		//ntokens_++;
-		if (words_.m_size % 1000000 == 0 && args_->verbose > 1) {
+		/*if (words_.m_size % 1000000 == 0 && args_->verbose > 1) {
 			std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::flush;
+		}*/
+		if (ntokens_ % 1000000 == 0 && args_->verbose > 1) {
+			std::cerr << "\rRead " << ntokens_ / 1000000 << "M words" << std::flush;
 		}
 	}
+
 	words_.prune(args_->minCount);
+
 	if (args_->model == model_name::subchar_chinese) {
 		word_radical_.prune(args_->minCount);
 	}
@@ -677,7 +684,8 @@ void Dictionary::readFromFile(std::istream& in) {
 	initTableDiscard();
 
 	if (args_->verbose > 0) {
-		std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::endl;
+		//std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::endl;
+		std::cerr << "\rRead " << ntokens_ / 1000000 << "M words" << std::endl;
 		std::cerr << "Number of words:  " << words_.m_size << std::endl;
 		std::cerr << "Number of features: " << features_.m_size << std::endl;
 		std::cerr << "Number of targets: " << targets_.m_size << std::endl;

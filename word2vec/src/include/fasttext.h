@@ -101,7 +101,8 @@ void FastText::train(const Args args) {
 	}
 	
 
-	input_ = std::make_shared<Matrix>(dict_->nwords() + dict_->nfeatures(), args_->dim);
+	//input_ = std::make_shared<Matrix>(dict_->nwords() + dict_->nfeatures(), args_->dim);
+	input_ = std::make_shared<Matrix>(dict_->nwords() + args_->bucket, args_->dim);
 	input_->uniform(1.0 / args_->dim);
 
 	output_ = std::make_shared<Matrix>(dict_->nwords(), args_->dim);
