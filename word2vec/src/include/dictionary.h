@@ -344,13 +344,14 @@ void Dictionary::initFeature() {
 			word = words_.from_id(i);
 			feat = getFeat(word);
 			std::string featBE = (BOW + feat + EOW);
-			vector<string> ngrams;
-			computerSubfeat(featBE, ngrams);
-			for (size_t j = 0; j < ngrams.size(); j++) {
-				addFeature(ngrams[j], words_.m_id_to_freq[i]);
+			if (word != EOS) {
+				vector<string> ngrams;
+				computerSubfeat(featBE, ngrams);
+				for (size_t j = 0; j < ngrams.size(); j++) {
+					addFeature(ngrams[j], words_.m_id_to_freq[i]);
+				}
 			}
 		}
-		//std::getchar();
 	}
 
 	//subcomponent for chinese character component feature
@@ -363,10 +364,12 @@ void Dictionary::initFeature() {
 			word = words_.from_id(i);
 			feat = getFeat(word);
 			std::string featBE = (BOW + feat + EOW);
-			vector<string> ngrams;
-			computerSubfeat(featBE, ngrams);
-			for (size_t j = 0; j < ngrams.size(); j++) {
-				addFeature(ngrams[j], words_.m_id_to_freq[i]);
+			if (word != EOS) {
+				vector<string> ngrams;
+				computerSubfeat(featBE, ngrams);
+				for (size_t j = 0; j < ngrams.size(); j++) {
+					addFeature(ngrams[j], words_.m_id_to_freq[i]);
+				}
 			}
 		}
 	}
@@ -519,13 +522,14 @@ int64_t Dictionary::ntokens() const {
 void Dictionary::initNgrams() {
 	wordprops_.resize(words_.m_size);
 
-	if (args_->model == model_name::skipgram || args_->model == model_name::subword){
+	if (args_->model == model_name::skipgram || args_->model == model_name::subword) {
 		for (size_t i = 0; i < words_.m_size; i++) {
 			wordprops_[i].word = words_.from_id(i);
 			wordprops_[i].count = words_.m_id_to_freq[i];
 
 			std::string word = BOW + wordprops_[i].word + EOW;
 			wordprops_[i].subwords.clear();
+			wordprops_[i].subwords.push_back(i);
 			if (wordprops_[i].word != EOS) {
 				computeSubwords(word, wordprops_[i].subwords);
 			}
@@ -547,6 +551,7 @@ void Dictionary::initNgrams() {
 			wordprops_[i].count = words_.m_id_to_freq[wordId];
 			std::string ra = BOW + radical + EOW;
 			wordprops_[i].subwords.clear();
+			wordprops_[i].subwords.push_back(i);
 			if (wordprops_[i].word != EOS) {
 				computeSubradical(ra, wordprops_[i].subwords);
 			}
@@ -562,6 +567,7 @@ void Dictionary::initNgrams() {
 			std::string feat = getFeat(wordprops_[i].word);
 			std::string featBE = (BOW + feat + EOW);
 			wordprops_[i].subwords.clear();
+			wordprops_[i].subwords.push_back(i);
 			if (wordprops_[i].word != EOS) {
 				computerSubfeat(featBE, wordprops_[i].subwords);
 			}
@@ -576,6 +582,7 @@ void Dictionary::initNgrams() {
 			std::string feat = getFeat(wordprops_[i].word);
 			std::string featBE = (BOW + feat + EOW);
 			wordprops_[i].subwords.clear();
+			wordprops_[i].subwords.push_back(i);
 			if (wordprops_[i].word != EOS) {
 				computerSubfeat(featBE, wordprops_[i].subwords);
 			}
@@ -642,8 +649,6 @@ void Dictionary::readFromFile(std::istream& in) {
 	std::string word;
 	ntokens_ = 0;
 	while (readWord(in, word)) {
-		//std::cout << word << std::endl;
-		//std::getchar();
 		if ((args_->model == model_name::skipgram) || (args_->model == model_name::subword)) {
 			addWord(word);
 			ntokens_++;
@@ -663,10 +668,6 @@ void Dictionary::readFromFile(std::istream& in) {
 			addWord(word_radical.substr(0, pos_));
 			ntokens_++;
 		}
-		//ntokens_++;
-		/*if (words_.m_size % 1000000 == 0 && args_->verbose > 1) {
-			std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::flush;
-		}*/
 		if (ntokens_ % 1000000 == 0 && args_->verbose > 1) {
 			std::cerr << "\rRead " << ntokens_ / 1000000 << "M words" << std::flush;
 		}
@@ -684,8 +685,8 @@ void Dictionary::readFromFile(std::istream& in) {
 	initTableDiscard();
 
 	if (args_->verbose > 0) {
-		//std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::endl;
 		std::cerr << "\rRead " << ntokens_ / 1000000 << "M words" << std::endl;
+		std::cerr << "Number of all words:  " << ntokens_ << std::endl;
 		std::cerr << "Number of words:  " << words_.m_size << std::endl;
 		std::cerr << "Number of features: " << features_.m_size << std::endl;
 		std::cerr << "Number of targets: " << targets_.m_size << std::endl;
@@ -704,8 +705,8 @@ void Dictionary::readFromFile(std::istream& in, std::istream& infeature) {
 	while (readWord(in, word)) {
 		addWord(word);
 		ntokens_++;
-		if (words_.m_size % 1000000 == 0 && args_->verbose > 1) {
-			std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::flush;
+		if (ntokens_ % 1000000 == 0 && args_->verbose > 1) {
+			std::cerr << "\rRead " << ntokens_ / 1000000 << "M words" << std::flush;
 		}
 	}
 	words_.prune(args_->minCount);
@@ -720,7 +721,8 @@ void Dictionary::readFromFile(std::istream& in, std::istream& infeature) {
 	initTableDiscard();
 
 	if (args_->verbose > 0) {
-		std::cerr << "\rRead " << words_.m_size / 1000000 << "M words" << std::endl;
+		std::cerr << "\rRead " << ntokens_ / 1000000 << "M words" << std::endl;
+		std::cerr << "Number of all words:  " << ntokens_ << std::endl;
 		std::cerr << "Number of words:  " << words_.m_size << std::endl;
 		std::cerr << "Number of features: " << features_.m_size << std::endl;
 		std::cerr << "Number of targets: " << targets_.m_size << std::endl;

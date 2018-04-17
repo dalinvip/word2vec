@@ -132,8 +132,8 @@ void FastText::printInfo(real progress, real loss, std::ostream& log_stream) {
 	log_stream << " words/sec/thread: " << std::setw(7) << int64_t(wst);
 	log_stream << " lr: " << std::setw(9) << std::setprecision(6) << lr;
 	log_stream << " loss: " << std::setw(9) << std::setprecision(6) << loss;
-	//log_stream << " ETA: " << std::setw(3) << etah;
-	//log_stream << "h" << std::setw(2) << etam << "m";
+	log_stream << " ETA: " << std::setw(3) << etah;
+	log_stream << "h" << std::setw(2) << etam << "m";
 	log_stream << std::flush;
 }
 
@@ -230,6 +230,7 @@ void FastText::trainThread(int32_t threadId) {
 			localTokenCount += dict_->getLine(ifs, sourceType, source, target, model.rng);
 			subword(model, lr, source, target);
 		} else if (args_->model == model_name::subchar_chinese) {
+			exit(0);
 			localTokenCount += dict_->getLine_zh(ifs, sourceType, source, target, model.rng);
 			subchar_chinese(model, lr, source, target);
 		} else if (args_->model == model_name::subradical){
