@@ -39,8 +39,8 @@ struct  feature
 
 class Dictionary {
   protected:
-	  //static const int32_t MAX_VOCAB_SIZE = 100000000;
-	  static const int32_t MAX_VOCAB_SIZE = 30000000;
+	  static const int32_t MAX_VOCAB_SIZE = 100000000;
+	  //static const int32_t MAX_VOCAB_SIZE = 30000000;
 	static const int32_t MAX_LINE_SIZE = 1024;
 
 	int32_t findWord(const std::string&) const;
@@ -294,8 +294,8 @@ void Dictionary::initTargets() {
 * @Function: feature initial.
 */
 void Dictionary::initFeature() {
-	// skipgram not feature
-	if (args_->model == model_name::skipgram)
+	// skipgram and cbow model don't need feature
+	if ((args_->model == model_name::skipgram) || (args_->model == model_name::cbow))
 		return;
 
 	//subchar_chinese
@@ -522,14 +522,14 @@ int64_t Dictionary::ntokens() const {
 void Dictionary::initNgrams() {
 	wordprops_.resize(words_.m_size);
 
-	if (args_->model == model_name::skipgram || args_->model == model_name::subword) {
+	if ((args_->model == model_name::skipgram) || (args_->model == model_name::cbow) || (args_->model == model_name::subword)) {
 		for (size_t i = 0; i < words_.m_size; i++) {
 			wordprops_[i].word = words_.from_id(i);
 			wordprops_[i].count = words_.m_id_to_freq[i];
 
 			std::string word = BOW + wordprops_[i].word + EOW;
 			wordprops_[i].subwords.clear();
-			wordprops_[i].subwords.push_back(i);
+			//wordprops_[i].subwords.push_back(i);
 			if (wordprops_[i].word != EOS) {
 				computeSubwords(word, wordprops_[i].subwords);
 			}
@@ -551,7 +551,7 @@ void Dictionary::initNgrams() {
 			wordprops_[i].count = words_.m_id_to_freq[wordId];
 			std::string ra = BOW + radical + EOW;
 			wordprops_[i].subwords.clear();
-			wordprops_[i].subwords.push_back(i);
+			//wordprops_[i].subwords.push_back(i);
 			if (wordprops_[i].word != EOS) {
 				computeSubradical(ra, wordprops_[i].subwords);
 			}
@@ -567,7 +567,7 @@ void Dictionary::initNgrams() {
 			std::string feat = getFeat(wordprops_[i].word);
 			std::string featBE = (BOW + feat + EOW);
 			wordprops_[i].subwords.clear();
-			wordprops_[i].subwords.push_back(i);
+			//wordprops_[i].subwords.push_back(i);
 			if (wordprops_[i].word != EOS) {
 				computerSubfeat(featBE, wordprops_[i].subwords);
 			}
@@ -582,7 +582,7 @@ void Dictionary::initNgrams() {
 			std::string feat = getFeat(wordprops_[i].word);
 			std::string featBE = (BOW + feat + EOW);
 			wordprops_[i].subwords.clear();
-			wordprops_[i].subwords.push_back(i);
+			//wordprops_[i].subwords.push_back(i);
 			if (wordprops_[i].word != EOS) {
 				computerSubfeat(featBE, wordprops_[i].subwords);
 			}
@@ -649,7 +649,7 @@ void Dictionary::readFromFile(std::istream& in) {
 	std::string word;
 	ntokens_ = 0;
 	while (readWord(in, word)) {
-		if ((args_->model == model_name::skipgram) || (args_->model == model_name::subword)) {
+		if ((args_->model == model_name::skipgram) || (args_->model == model_name::cbow) || (args_->model == model_name::subword)) {
 			addWord(word);
 			ntokens_++;
 		}
@@ -749,9 +749,10 @@ void Dictionary::readFeature(std::istream& infeature) {
 		}
 		word = line.substr(0, pos);
 		feat = line.substr(pos + 1);
+		//std::cout << word << " && " << feat << std::endl;
 		featuremap[word] = feat;
 	}
-	std::cerr << "featuremap size	" << featuremap.size() << std::endl;
+	std::cerr << "\nfeaturemap size	" << featuremap.size() << std::endl;
 }
 
 /**
@@ -779,8 +780,7 @@ std::vector<int64_t> Dictionary::getCounts() const {
 * @Function: getLine.
 */
 int32_t Dictionary::getLine(std::istream& in, std::vector<std::vector<int32_t> >& sourceTypes,
-	std::vector<std::vector<int32_t> >& sources,
-	std::vector<int32_t>& targets, std::minstd_rand& rng) const {
+	std::vector<std::vector<int32_t> >& sources, std::vector<int32_t>& targets, std::minstd_rand& rng) const {
 	std::uniform_real_distribution<> uniform(0, 1);
 	std::string token;
 	vector<string> words;
@@ -813,7 +813,7 @@ int32_t Dictionary::getLine(std::istream& in, std::vector<std::vector<int32_t> >
 		sources[valid - 1].push_back(wid);
 		targets.push_back(tid);
 
-		if (args_->model == model_name::skipgram)
+		if ((args_->model == model_name::skipgram) || (args_->model == model_name::cbow))
 			continue;
 
 		int ngrams_count = wordprops_[wid].subwords.size();
@@ -875,7 +875,7 @@ int32_t Dictionary::getLine_zh(std::istream& in, std::vector<std::vector<int32_t
 		sources[valid - 1].push_back(wid);
 		targets.push_back(tid);
 
-		if (args_->model == model_name::skipgram)
+		if ((args_->model == model_name::skipgram) || (args_->model == model_name::cbow))
 			continue;
 
 		int ngrams_count = wordprops_[wid].subwords.size();

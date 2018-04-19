@@ -53,7 +53,6 @@ public:
 	real negativeSampling(int32_t, real);
 
 	void update(const std::vector<int32_t>&, int32_t, real);
-	void updatePara(const std::vector<int32_t>&, int32_t, real);
 	void computeHidden(const std::vector<int32_t>&, Vector&) const;
 
 	void setTargetCounts(const std::vector<int64_t>&);

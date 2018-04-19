@@ -1,4 +1,4 @@
-﻿/**
+/**
 * @Author: bamtercelboo
 * @Date： 2018/03/15
 * @File: main.cpp
@@ -13,7 +13,7 @@
 #include<string>
 
 
-enum class model_name : int { skipgram = 1, subword, subchar_chinese, subradical, subcomponent};
+enum class model_name : int { skipgram = 1, cbow, subword, subchar_chinese, subradical, subcomponent};
 enum class loss_name : int {ns = 1};
 
 class Args {
@@ -34,7 +34,7 @@ class Args {
 		int ws; // windows size
 		int epoch;
 		int minCount;
-		int minCountLabel; // ?
+		int minCountLabel; 
 		int neg;
 		loss_name loss;
 		model_name model;
@@ -42,7 +42,7 @@ class Args {
 		int minn;
 		int maxn;
 		int thread;
-		double t; //?
+		double t; 
 		std::string label;
 		int verbose;
 		std::string pretrainedVectors;
@@ -98,7 +98,9 @@ Args::Args() {
 */
 void Args::parseArgs(const std::vector<std::string>& args) {
 	std::string command(args[1]);
-	if (command == "subword") {
+	if (command == "cbow") {
+		model = model_name::cbow;
+	} else if (command == "subword") {
 		model = model_name::subword;
 	} else if (command == "subchar_chinese") {
 		model = model_name::subchar_chinese;
@@ -295,6 +297,8 @@ std::string Args::modelToString(model_name mn) const {
 	{
 	case model_name::skipgram:
 		return "skipgram";
+	case model_name::cbow:
+		return "cbow";
 	case model_name::subword:
 		return "subword";
 	case model_name::subchar_chinese:

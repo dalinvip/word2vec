@@ -19,6 +19,7 @@ void printUsage() {
 		<< "usage: word2vec <command> <args>\n\n"
 		<< "The commands supported by word2vec are:\n\n"
 		<< "  skipgram  ------ train word embedding by use skipgram model\n"
+		<< "  cbow  ------ train word embedding by use cbow model\n"
 		<< "  subword   ------ train word embedding by use subword  model\n"
 		<< "  subchar_chinese   ------ train chinses character embedding by use subchar_chinese model\n"
 		<< "  subradical   ------ train chinses character embedding by use subradical model\n"
@@ -34,7 +35,6 @@ void train(const std::vector<std::string> args) {
 	fasttext.train(a);
 	fasttext.saveVectors();
 	std::cout << "Train Embedding By Using " + args[1] + " model have Finished" << std::endl;
-
 }
 
 int main(int argc, char** argv){
@@ -47,7 +47,7 @@ int main(int argc, char** argv){
 	}
 	std::string command(args[1]);
 	std::cout << command << std::endl;
-	if (command != "skipgram" && command != "subword" && command != "subchar_chinese" 
+	if (command != "skipgram" && command != "cbow" && command != "subword" && command != "subchar_chinese"
 		&& command != "subradical" && command != "subcomponent") {
 		std::cerr << "\nError command: " + command << std::endl;
 		printUsage();
