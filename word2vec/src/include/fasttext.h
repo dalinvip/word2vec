@@ -72,6 +72,7 @@ void FastText::train(const Args args) {
 	if (!ifs.is_open()) {
 		throw std::invalid_argument(args_->input + "cannot be opened for training!");
 	}
+	std::cout << "Training From " << args_->input << std::endl;
 
 	if ((args_->model == model_name::skipgram) || (args_->model == model_name::cbow) || (args_->model == model_name::subword) 
 		|| (args_->model == model_name::subchar_chinese)) {
@@ -219,7 +220,8 @@ void FastText::subcomponent(Model& model, real lr, const std::vector<std::vector
 		const std::vector<int32_t>& ngrams = source[w];
 		for (int32_t c = -boundary; c <= boundary; c++) {
 			if (c != 0 && w + c >= 0 && w + c < target.size()) {
-				model.update(ngrams, target[w + c], lr);
+				//model.update(ngrams, target[w + c], lr);
+				model.updatePara(ngrams, target[w + c], lr);
 			}
 		}
 	}

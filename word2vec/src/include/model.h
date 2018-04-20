@@ -53,6 +53,7 @@ public:
 	real negativeSampling(int32_t, real);
 
 	void update(const std::vector<int32_t>&, int32_t, real);
+	void updatePara(const std::vector<int32_t>&, int32_t, real);
 	void computeHidden(const std::vector<int32_t>&, Vector&) const;
 
 	void setTargetCounts(const std::vector<int64_t>&);
@@ -148,6 +149,22 @@ void Model::update(const std::vector<int32_t>& input, int32_t target, real lr) {
 	nexamples_ += 1;
 	for (auto it = input.cbegin(); it != input.cend(); ++it) {
 		wi_->addRow(grad_.data_, *it, 1.0);
+	}
+}
+
+void Model::updatePara(const std::vector<int32_t>& input, int32_t target, real lr) {
+	vector<int32_t> source;
+	source.push_back(input[0]);
+	update(source, target, lr);
+
+	int input_size = input.size();
+	if (input_size > 1) {
+		vector<int32_t> feature;
+		for (int i = 1; i < input_size; i++) {
+			feature.push_back(input[i]);
+		}
+		update(feature, target, lr);
+		nexamples_ -= 1;
 	}
 }
 

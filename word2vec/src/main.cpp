@@ -28,17 +28,17 @@ void printUsage() {
 }
  
 void train(const std::vector<std::string> args) {
-	std::cout << "Train Embedding By Using " + args[1] + " model" << std::endl;
+	std::cout << "Train Embedding By Using [" + args[1] + "] model" << std::endl;
 	Args a = Args();
 	a.parseArgs(args);
 	FastText fasttext;
 	fasttext.train(a);
 	fasttext.saveVectors();
-	std::cout << "Train Embedding By Using " + args[1] + " model have Finished" << std::endl;
+	std::cout << "Train Embedding By Using [" + args[1] + "] model have Finished" << std::endl;
 }
 
 int main(int argc, char** argv){
-	std::cout << "word2vec" << std::endl;
+	//std::cout << "word2vec" << std::endl;
 	std::vector<std::string> args(argv, argv + argc);
 	if (args.size() < 2) {
 		printUsage();
@@ -46,7 +46,7 @@ int main(int argc, char** argv){
 		exit(EXIT_FAILURE);
 	}
 	std::string command(args[1]);
-	std::cout << command << std::endl;
+	//std::cout << command << std::endl;
 	if (command != "skipgram" && command != "cbow" && command != "subword" && command != "subchar_chinese"
 		&& command != "subradical" && command != "subcomponent") {
 		std::cerr << "\nError command: " + command << std::endl;
