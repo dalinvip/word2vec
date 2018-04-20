@@ -382,7 +382,7 @@ void Dictionary::trim(std::string& s) {
 	int index = 0;
 	if (!s.empty())
 	{
-		while ((index = s.find(" ", index)) != string::npos)
+		while ((index = s.find(' ', index)) != string::npos)
 		{
 			s.erase(index, 1);
 		}
@@ -619,9 +619,8 @@ bool Dictionary::readWord(std::istream& in, std::string& word) const {
 	std::streambuf& sb = *in.rdbuf();
 	word.clear();
 	while ((c = sb.sbumpc()) != EOF) {
-		//std::cout <<"char " + c << std::endl;
-		if (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v' ||
-			c == '\f' || c == '\0') {
+		//std::cout <<"char " << c << std::endl;
+		if (c == ' ' || c == '\n' || c == '\r' || c == '\t' || c == '\v' || c == '\f' || c == '\0') {
 			if (word.empty()) {
 				if (c == '\n') {
 					word += EOS;
@@ -742,7 +741,7 @@ void Dictionary::readFeature(std::istream& infeature) {
 	featuremap.clear();
 	while (std::getline(infeature, line)){
 		//std::cout << line << std::endl;
-		int pos = line.find_first_of(" ");
+		int pos = line.find_first_of(' ');
 		if (pos == -1) {
 			std::cerr << "Warning " << line << std::endl;
 			continue;

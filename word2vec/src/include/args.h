@@ -70,7 +70,7 @@ Args::Args() {
 	dim = 100;
 	ws = 5;
 	epoch = 5;
-	minCount = 5;
+	minCount = 10;
 	minCountLabel = 0;
 	neg = 5;
 	loss = loss_name::ns;
@@ -88,8 +88,8 @@ Args::Args() {
 	radical = "_";
 	radicalpad = "NRA";
 	// componentpad must be one character
-	componentpad = "N";
-	featurepad = "N";
+	componentpad = 'N';
+	featurepad = 'N';
 	saveOutput = false;
 }
 

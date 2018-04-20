@@ -207,7 +207,8 @@ void FastText::subradical(Model& model, real lr, const std::vector<std::vector<i
 		const std::vector<int32_t>& ngrams = source[w];
 		for (int32_t c = -boundary; c <= boundary; c++) {
 			if (c != 0 && w + c >= 0 && w + c < target.size()) {
-				model.update(ngrams, target[w + c], lr);
+				//model.update(ngrams, target[w + c], lr);
+				model.updatePara(ngrams, target[w + c], lr);
 			}
 		}
 	}
